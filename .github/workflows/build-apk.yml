@@ -29,14 +29,17 @@ jobs:
 
           SDKMANAGER=$(find "$ANDROID_SDK_ROOT/cmdline-tools" -name sdkmanager -type f | head -1)
 
-          echo "Using sdkmanager: $SDKMANAGER"
-
           yes | "$SDKMANAGER" --licenses || true
 
           "$SDKMANAGER" \
             "platform-tools" \
             "platforms;android-35" \
             "build-tools;35.0.0"
+
+      - name: Enable AndroidX
+        run: |
+          echo "android.useAndroidX=true" >> pos_build_ready/gradle.properties
+          echo "android.enableJetifier=true" >> pos_build_ready/gradle.properties
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -45,8 +48,7 @@ jobs:
 
       - name: Build APK
         working-directory: pos_build_ready
-        run: |
-          gradle assembleDebug --no-daemon
+        run: gradle assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
