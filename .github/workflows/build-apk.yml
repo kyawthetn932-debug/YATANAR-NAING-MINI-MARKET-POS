@@ -17,57 +17,39 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup Basic Android Project
-      run: |
-        rm -rf *
-        mkdir -p app/src/main/java/com/yatanarnaing/pos
-        mkdir -p app/src/main/res/layout
-        mkdir -p app/src/main/res/values
-
-        # 1. Settings Configuration with Repositories
-        echo "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }" > settings.gradle
-        echo "dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }" >> settings.gradle
-        echo "include ':app'" >> settings.gradle
-
-        # 2. Build Script
-        echo "plugins { id 'com.android.application' version '8.1.1' apply false }" > build.gradle
-
-        # 3. AndroidX Enable
-        echo -e "android.useAndroidX=true\nandroid.enableJetifier=true" > gradle.properties
-
-        # 4. App Build Gradle
-        echo -e "plugins { id 'com.android.application' }\nandroid {\n    namespace 'com.yatanarnaing.pos'\n    compileSdk 33\n    defaultConfig {\n        applicationId 'com.yatanarnaing.pos'\n        minSdk 24\n        targetSdk 33\n        versionCode 18\n        versionName '18.0'\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}" > app/build.gradle
-
-        # 5. Correct Android Manifest File (Using Official Schemas URI)
-        echo '<?xml version="1.0" encoding="utf-8"?>' > app/src/main/AndroidManifest.xml
-        echo '<manifest xmlns:android="http://android.com">' >> app/src/main/AndroidManifest.xml
-        echo '    <application android:allowBackup="true" android:label="ရတနာနိုင် AI-POS Pro" android:theme="@style/Theme.AppCompat.Light.NoActionBar">' >> app/src/main/AndroidManifest.xml
-        echo '        <activity android:name="com.yatanarnaing.pos.MainActivity" android:exported="true">' >> app/src/main/AndroidManifest.xml
-        echo '            <intent-filter>' >> app/src/main/AndroidManifest.xml
-        echo '                <action android:name="android.intent.action.MAIN" />' >> app/src/main/AndroidManifest.xml
-        echo '                <category android:name="android.intent.category.LAUNCHER" />' >> app/src/main/AndroidManifest.xml
-        echo '            </intent-filter>' >> app/src/main/AndroidManifest.xml
-        echo '        </activity>' >> app/src/main/AndroidManifest.xml
-        echo '    </application>' >> app/src/main/AndroidManifest.xml
-        echo '</manifest>' >> app/src/main/AndroidManifest.xml
-
-        # 6. Main Layout XML File
-        echo '<?xml version="1.0" encoding="utf-8"?>' > app/src/main/res/layout/activity_main.xml
-        echo '<LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">' >> app/src/main/res/layout/activity_main.xml
-        echo '    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>' >> app/src/main/res/layout/activity_main.xml
-        echo '    <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>' >> app/src/main/res/layout/activity_main.xml
-        echo '    <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>' >> app/src/main/res/layout/activity_main.xml
-        echo '</LinearLayout>' >> app/src/main/res/layout/activity_main.xml
-
-        # 7. MainActivity Java Source Code
-        echo -e 'package com.yatanarnaing.pos;\nimport android.os.Bundle;\nimport android.widget.TextView;\nimport androidx.appcompat.app.AppCompatActivity;\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) { \n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n        TextView seasonal = findViewById(R.id.txt_seasonal_tips);\n        TextView inventory = findViewById(R.id.txt_inventory_status);\n        seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");\n        inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ် အဆင်သင့်ဖြစ်ပါပြီ။");\n    }\n}' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
-
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
         gradle-version: 8.2
 
-    - name: Build Smart POS APK
+    - name: Automatically Generate Clean Android Project Files
+      run: |
+        rm -rf *
+        
+        # 1. Generate clean configuration using built-in engine
+        gradle init --type basic --dsl groovy
+        
+        # 2. Overwrite with standard structure
+        mkdir -p app/src/main/java/com/yatanarnaing/pos
+        mkdir -p app/src/main/res/layout
+        mkdir -p app/src/main/res/values
+
+        # 3. Create absolute layout XML design
+        printf '<?xml version="1.0" encoding="utf-8"?>\n<LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">\n    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>\n    <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>\n    <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>\n</LinearLayout>\n' > app/src/main/res/layout/activity_main.xml
+
+        # 4. Create proper Manifest structure
+        printf '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com">\n    <application android:allowBackup="true" android:label="ရတနာနိုင် AI-POS Pro" android:theme="@style/Theme.AppCompat.Light.NoActionBar">\n        <activity android:name="com.yatanarnaing.pos.MainActivity" android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>\n' > app/src/main/AndroidManifest.xml
+
+        # 5. Create core Java source code file
+        printf 'package com.yatanarnaing.pos;\nimport android.os.Bundle;\nimport android.widget.TextView;\nimport androidx.appcompat.app.AppCompatActivity;\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n        TextView seasonal = findViewById(R.id.txt_seasonal_tips);\n        TextView inventory = findViewById(R.id.txt_inventory_status);\n        if(seasonal != null) seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");\n        if(inventory != null) inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ် အဆင်သင့်ဖြစ်ပါပြီ။");\n    }\n}\n' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
+
+        # 6. Setup exact standard build scripts
+        printf "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }\ninclude ':app'\n" > settings.gradle
+        printf "plugins { id 'com.android.application' version '8.1.1' apply false }\n" > build.gradle
+        printf "android.useAndroidX=true\nandroid.enableJetifier=true\n" > gradle.properties
+        printf "plugins { id 'com.android.application' }\nandroid {\n    namespace 'com.yatanarnaing.pos'\n    compileSdk 33\n    defaultConfig {\n        applicationId 'com.yatanarnaing.pos'\n        minSdk 24\n        targetSdk 33\n        versionCode 19\n        versionName '19.0'\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}\n" > app/build.gradle
+
+    - name: Build Pure Android APK
       run: gradle assembleDebug --no-daemon
 
     - name: Upload Core Output APK
