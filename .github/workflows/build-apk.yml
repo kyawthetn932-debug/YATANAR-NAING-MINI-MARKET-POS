@@ -24,8 +24,10 @@ jobs:
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
 
-        # 1. Settings Configuration
-        echo "include ':app'" > settings.gradle
+        # 1. Settings Configuration with Repositories
+        echo "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }" > settings.gradle
+        echo "dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }" >> settings.gradle
+        echo "include ':app'" >> settings.gradle
 
         # 2. Build Script
         echo "plugins { id 'com.android.application' version '8.1.1' apply false }" > build.gradle
@@ -34,7 +36,7 @@ jobs:
         echo -e "android.useAndroidX=true\nandroid.enableJetifier=true" > gradle.properties
 
         # 4. App Build Gradle
-        echo -e "plugins { id 'com.android.application' }\nandroid {\n    namespace 'com.yatanarnaing.pos'\n    compileSdk 33\n    defaultConfig {\n        applicationId 'com.yatanarnaing.pos'\n        minSdk 24\n        targetSdk 33\n        versionCode 16\n        versionName '16.0'\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}" > app/build.gradle
+        echo -e "plugins { id 'com.android.application' }\nandroid {\n    namespace 'com.yatanarnaing.pos'\n    compileSdk 33\n    defaultConfig {\n        applicationId 'com.yatanarnaing.pos'\n        minSdk 24\n        targetSdk 33\n        versionCode 17\n        versionName '17.0'\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}" > app/build.gradle
 
         # 5. Android Manifest File
         echo -e '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com">\n    <application android:allowBackup="true" android:label="ရတနာနိုင် AI-POS Pro" android:theme="@style/Theme.AppCompat.Light.NoActionBar">\n        <activity android:name="com.yatanarnaing.pos.MainActivity" android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>' > app/src/main/AndroidManifest.xml
