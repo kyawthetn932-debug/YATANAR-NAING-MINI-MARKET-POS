@@ -40,8 +40,8 @@ jobs:
                 applicationId "com.yatanarnaing.pos"
                 minSdk 24
                 targetSdk 33
-                versionCode 8
-                versionName "8.0"
+                versionCode 9
+                versionName "9.0"
             }
         }
         dependencies {
@@ -53,7 +53,10 @@ jobs:
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://android.com">
-            <application android:allowBackup="true" android:label="ရတနာနိုင် AI-POS Pro" android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            <application 
+                android:allowBackup="true" 
+                android:label="ရတနာနိုင် AI-POS Pro" 
+                android:theme="@style/Theme.AppCompat.Light.NoActionBar">
                 <activity android:name=".MainActivity" android:exported="true">
                     <intent-filter>
                         <action android:name="android.intent.action.MAIN" />
@@ -67,7 +70,11 @@ jobs:
         # 5. app/src/main/res/layout/activity_main.xml
         cat << 'EOF' > app/src/main/res/layout/activity_main.xml
         <?xml version="1.0" encoding="utf-8"?>
-        <LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">
+        <LinearLayout xmlns:android="http://android.com" 
+            android:layout_width="match_parent" 
+            android:layout_height="match_parent" 
+            android:orientation="vertical" 
+            android:padding="16dp">
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>
             <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>
             <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>
