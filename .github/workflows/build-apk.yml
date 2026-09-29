@@ -51,7 +51,13 @@ jobs:
         }
         EOF
 
-        # 3. app/build.gradle
+        # 3. gradle.properties (AndroidX စနစ်ကို မဖြစ်မနေ အတင်းအကျပ် ဖွင့်ခိုင်းသည့် ဆက်တင်)
+        cat << 'EOF' > gradle.properties
+        android.useAndroidX=true
+        android.enableJetifier=true
+        EOF
+
+        # 4. app/build.gradle
         cat << 'EOF' > app/build.gradle
         plugins {
             id 'com.android.application'
@@ -63,8 +69,8 @@ jobs:
                 applicationId "com.yatanarnaing.pos"
                 minSdk 24
                 targetSdk 33
-                versionCode 12
-                versionName "12.0"
+                versionCode 13
+                versionName "13.0"
             }
         }
         dependencies {
@@ -72,7 +78,7 @@ jobs:
         }
         EOF
 
-        # 4. app/src/main/AndroidManifest.xml
+        # 5. app/src/main/AndroidManifest.xml
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://android.com">
@@ -90,7 +96,7 @@ jobs:
         </manifest>
         EOF
 
-        # 5. app/src/main/res/layout/activity_main.xml
+        # 6. app/src/main/res/layout/activity_main.xml
         cat << 'EOF' > app/src/main/res/layout/activity_main.xml
         <?xml version="1.0" encoding="utf-8"?>
         <LinearLayout xmlns:android="http://android.com" 
@@ -104,7 +110,7 @@ jobs:
         </LinearLayout>
         EOF
 
-        # 6. app/src/main/java/com/yatanarnaing/pos/MainActivity.java
+        # 7. app/src/main/java/com/yatanarnaing/pos/MainActivity.java
         cat << 'EOF' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
         package com.yatanarnaing.pos;
         import android.os.Bundle;
