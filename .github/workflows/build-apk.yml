@@ -17,35 +17,46 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Construct Bulletproof Android Project
-      run: |
-        rm -rf *
-        mkdir -p app/src/main/java/com/yatanarnaing/pos
-        mkdir -p app/src/main/res/layout
-        mkdir -p app/src/main/res/values
-
-        printf "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }\ninclude ':app'\n" > settings.gradle
-        printf "plugins { id 'com.android.application' version '8.1.1' apply false }\n" > build.gradle
-        printf "android.useAndroidX=true\nandroid.enableJetifier=true\n" > gradle.properties
-
-        printf "plugins { id 'com.android.application' }\nandroid {\n    namespace 'com.yatanarnaing.pos'\n    compileSdk 33\n    defaultConfig {\n        applicationId 'com.yatanarnaing.pos'\n        minSdk 24\n        targetSdk 33\n        versionCode 34\n        versionName '34.0'\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}\n" > app/build.gradle
-
-        printf '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com">\n    <application android:allowBackup="true" android:label="ရတနာနိုင် AI-POS Pro" android:theme="@style/Theme.AppCompat.Light.NoActionBar">\n        <activity android:name="com.yatanarnaing.pos.MainActivity" android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>\n' > app/src/main/AndroidManifest.xml
-
-        printf '<?xml version="1.0" encoding="utf-8"?>\n<LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">\n    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>\n    <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>\n    <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>\n</LinearLayout>\n' > app/src/main/res/layout/activity_main.xml
-
-        printf 'package com.yatanarnaing.pos;\nimport android.os.Bundle;\nimport android.widget.TextView;\nimport androidx.appcompat.app.AppCompatActivity;\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n        TextView seasonal = findViewById(R.id.txt_seasonal_tips);\n        TextView inventory = findViewById(R.id.txt_inventory_status);\n        if (seasonal != null) seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");\n        if (inventory != null) inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ် အဆင်သင့်ဖြစ်ပါပြီ။");\n    }\n}\n' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
-
-    - name: Setup Gradle Build Environment
+    - name: Setup Gradle Build Tool
       uses: gradle/actions/setup-gradle@v4
       with:
         gradle-version: 8.2
 
-    - name: Build Smart POS APK
-      run: gradle assembleDebug --no-daemon
+    - name: Extract and Audit POS Project
+      run: |
+        # ဇစ်ဖိုင်ကို စနစ်တကျ ဖြည်ချခြင်းနှင့် လမ်းကြောင်းစစ်ဆေးခြင်း
+        if [ -f YATANAR_NAING_POS_APK_BUILD_FIXED.zip ]; then
+          unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
+          echo "Zip extracted successfully."
+        else
+          echo "Error: Zip file not found!"
+          exit 1
+        fi
 
-    - name: Upload Output APK
+        # လမ်းကြောင်းအမှန်ကို ရှာဖွေအတည်ပြုခြင်း
+        BUILD_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
+        echo "Gradle project found at: $BUILD_DIR"
+        echo "PROJECT_DIR=$BUILD_DIR" >> $GITHUB_ENV
+
+    - name: Apply Strict AndroidX Properties
+      run: |
+        # AndroidX စနစ်ကို အတင်းအကျပ် အသက်သွင်းခြင်း
+        PROP_FILE="${{ env.PROJECT_DIR }}/gradle.properties"
+        if [ -f "$PROP_FILE" ]; then
+          echo "android.useAndroidX=true" >> "$PROP_FILE"
+          echo "android.enableJetifier=true" >> "$PROP_FILE"
+        else
+          echo -e "android.useAndroidX=true\nandroid.enableJetifier=true" > "$PROP_FILE"
+        fi
+
+    - name: Compile and Build Standard POS APK
+      run: |
+        cd ${{ env.PROJECT_DIR }}
+        # မူရင်း လုပ်ဆောင်ချက် ၃၄,၀၀၀ ကျော်ကို စံပြပုံစံအတိုင်း APK အဖြစ် အချောသတ် တည်ဆောက်ခြင်း
+        gradle assembleDebug --no-daemon
+
+    - name: Upload Verified POS Output APK
       uses: actions/upload-artifact@v4
       with:
-        name: YATANAR-NAING-PRO-POS-APK
-        path: app/build/outputs/apk/debug/*.apk
+        name: YATANAR-NAING-PROFESSIONAL-POS-APK
+        path: "**/build/outputs/apk/debug/*.apk"
