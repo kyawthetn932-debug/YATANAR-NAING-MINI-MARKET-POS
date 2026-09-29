@@ -17,140 +17,34 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup Gradle
+    - name: Construct Bulletproof Android Project
+      run: |
+        rm -rf *
+        mkdir -p app/src/main/java/com/yatanarnaing/pos
+        mkdir -p app/src/main/res/layout
+        mkdir -p app/src/main/res/values
+
+        printf "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }\ninclude ':app'\n" > settings.gradle
+        printf "plugins { id 'com.android.application' version '8.1.1' apply false }\n" > build.gradle
+        printf "android.useAndroidX=true\nandroid.enableJetifier=true\n" > gradle.properties
+
+        printf "plugins { id 'com.android.application' }\nandroid {\n    namespace 'com.yatanarnaing.pos'\n    compileSdk 33\n    defaultConfig {\n        applicationId 'com.yatanarnaing.pos'\n        minSdk 24\n        targetSdk 33\n        versionCode 34\n        versionName '34.0'\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}\n" > app/build.gradle
+
+        printf '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com">\n    <application android:allowBackup="true" android:label="ရတနာနိုင် AI-POS Pro" android:theme="@style/Theme.AppCompat.Light.NoActionBar">\n        <activity android:name="com.yatanarnaing.pos.MainActivity" android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>\n' > app/src/main/AndroidManifest.xml
+
+        printf '<?xml version="1.0" encoding="utf-8"?>\n<LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">\n    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>\n    <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>\n    <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>\n</LinearLayout>\n' > app/src/main/res/layout/activity_main.xml
+
+        printf 'package com.yatanarnaing.pos;\nimport android.os.Bundle;\nimport android.widget.TextView;\nimport androidx.appcompat.app.AppCompatActivity;\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n        TextView seasonal = findViewById(R.id.txt_seasonal_tips);\n        TextView inventory = findViewById(R.id.txt_inventory_status);\n        if (seasonal != null) seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");\n        if (inventory != null) inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ် အဆင်သင့်ဖြစ်ပါပြီ။");\n    }\n}\n' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
+
+    - name: Setup Gradle Build Environment
       uses: gradle/actions/setup-gradle@v4
       with:
         gradle-version: 8.2
 
-    - name: Absolute Python Project Generator
-      shell: python
-      run: |
-        import os
-        import shutil
-
-        # ၁။ ရှိသမျှ ဖိုင်ဟောင်း/ဇစ်ဖိုင်ဟောင်းအားလုံးကို အကြွင်းမဲ့ ရှင်းလင်းပစ်ခြင်း
-        for item in os.listdir('.'):
-            if item != '.github':
-                if os.path.isdir(item):
-                    shutil.rmtree(item)
-                else:
-                    os.remove(item)
-
-        # Folder ဖွဲ့စည်းပုံအသစ်များ အတိအကျ ဖန်တီးခြင်း
-        os.makedirs('app/src/main/java/com/yatanarnaing/pos', exist_ok=True)
-        os.makedirs('app/src/main/res/layout', exist_ok=True)
-        os.makedirs('app/src/main/res/values', exist_ok=True)
-
-        # ၂။ စံနှုန်းကိုက် settings.gradle ထုတ်ခြင်း
-        with open('settings.gradle', 'w', encoding='utf-8') as f:
-            f.write("pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\n"
-                    "dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }\n"
-                    "include ':app'\n")
-
-        # ၃။ build.gradle နှင့် ဆက်တင်များ ထုတ်ခြင်း
-        with open('build.gradle', 'w', encoding='utf-8') as f:
-            f.write("plugins { id 'com.android.application' version '8.1.1' apply false }\n")
-
-        with open('gradle.properties', 'w', encoding='utf-8') as f:
-            f.write("android.useAndroidX=true\nandroid.enableJetifier=true\n")
-
-        # ၄။ app/build.gradle ထုတ်ခြင်း
-        with open('app/build.gradle', 'w', encoding='utf-8') as f:
-            f.write("plugins { id 'com.android.application' }\n"
-                    "android {\n"
-                    "    namespace 'com.yatanarnaing.pos'\n"
-                    "    compileSdk 33\n"
-                    "    defaultConfig {\n"
-                    "        applicationId 'com.yatanarnaing.pos'\n"
-                    "        minSdk 24\n"
-                    "        targetSdk 33\n"
-                    "        versionCode 21\n"
-                    "        versionName '21.0'\n"
-                    "    }\n"
-                    "}\n"
-                    "dependencies {\n"
-                    "    implementation 'androidx.appcompat:appcompat:1.6.1'\n"
-                    "}\n")
-
-        # ၅။ (အရေးကြီးဆုံးအဆင့်) Python သုံး၍ စာသားမလွဲနိုင်သော စံနှုန်းကိုက် AndroidManifest.xml ဖန်တီးခြင်း
-        manifest_content = """<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://android.com">
-    <application
-        android:allowBackup="true"
-        android:label="ရတနာနိုင် AI-POS Pro"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity
-            android:name="com.yatanarnaing.pos.MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-</manifest>
-"""
-        with open('app/src/main/AndroidManifest.xml', 'w', encoding='utf-8') as f:
-            f.write(manifest_content)
-
-        # ၆။ activity_main.xml ဒီဇိုင်းထုတ်ခြင်း
-        layout_content = """<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://android.com"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:gravity="center"/>
-    <TextView
-        android:id="@+id/txt_seasonal_tips"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="ရာသီအလိုက် အကြံပြုချက်"
-        android:layout_marginTop="10dp"/>
-    <TextView
-        android:id="@+id/txt_inventory_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း"
-        android:layout_marginTop="10dp"/>
-</LinearLayout>
-"""
-        with open('app/src/main/res/layout/activity_main.xml', 'w', encoding='utf-8') as f:
-            f.write(layout_content)
-
-        # ၇။ MainActivity.java ကုဒ်အပြည့်အစုံထုတ်ခြင်း
-        java_content = """package com.yatanarnaing.pos;
-import android.os.Bundle;
-import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
-
-public class MainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        TextView seasonal = findViewById(R.id.txt_seasonal_tips);
-        TextView inventory = findViewById(R.id.txt_inventory_status);
-        if (seasonal != null) seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");
-        if (inventory != null) inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ် အဆင်သင့်ဖြစ်ပါပြီ။");
-    }
-}
-"""
-        with open('app/src/main/java/com/yatanarnaing/pos/MainActivity.java', 'w', encoding='utf-8') as f:
-            f.write(java_content)
-
-        print("SUCCESS: Bulletproof project structure generated via Python engine!")
-
-    - name: Build Pure Android APK
+    - name: Build Smart POS APK
       run: gradle assembleDebug --no-daemon
 
-    - name: Upload Core Output APK
+    - name: Upload Output APK
       uses: actions/upload-artifact@v4
       with:
         name: YATANAR-NAING-PRO-POS-APK
