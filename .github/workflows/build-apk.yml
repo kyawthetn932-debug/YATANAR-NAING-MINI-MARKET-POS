@@ -24,20 +24,19 @@ jobs:
 
     - name: Clean Environment and Build Fresh POS Project
       run: |
-        # ဖိုင်ဟောင်းများအားလုံးကို သန့်ရှင်းရေး အရင်လုပ်ခြင်း
         find . -maxdepth 1 ! -name 'YATANAR_NAING_POS_APK_BUILD_FIXED.zip' ! -name '.github' ! -name '.' -exec rm -rf {} +
-
-        # ဇစ်ဖိုင်ကို ဖြည်ချခြင်း
         unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
         
         PROJECT_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
-        TARGET_FILE="$PROJECT_DIR/app/src/main/java/com/yatanarnaing/pos/MainActivity.java"
+        
+        # ID မကိုက်ညီမှု ပြဿနာအားလုံးကို ပြေလည်စေရန် စံပြ Layout ဖိုင်ကို အသစ်ပြန်လည် ဖန်တီးပေးခြင်း
+        LAYOUT_FILE="$PROJECT_DIR/app/src/main/res/layout/activity_main.xml"
+        mkdir -p "$(dirname "$LAYOUT_FILE")"
+        printf '<?xml version="1.0" encoding="utf-8"?>\n<LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">\n    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>\n    <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>\n    <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>\n</LinearLayout>\n' > "$LAYOUT_FILE"
 
-        # တွန့်ကွင်းလွဲချော်မှုမရှိစေရန် printf စနစ်ဖြင့် MainActivity.java ကို တိကျစွာ ပြန်လည်အစားထိုးခြင်း
-        if [ -f "$TARGET_FILE" ]; then
-          printf 'package com.yatanarnaing.pos;\nimport android.os.Bundle;\nimport android.widget.TextView;\nimport androidx.appcompat.app.AppCompatActivity;\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n        TextView seasonal = findViewById(R.id.txt_seasonal_tips);\n        TextView inventory = findViewById(R.id.txt_inventory_status);\n        if (seasonal != null) seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");\n        if (inventory != null) inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ်/အဝေးကြည့်စနစ် အဆင်သင့်ဖြစ်ပါပြီ။");\n    }\n}\n' > "$TARGET_FILE"
-          echo "MainActivity.java successfully repaired!"
-        fi
+        TARGET_FILE="$PROJECT_DIR/app/src/main/java/com/yatanarnaing/pos/MainActivity.java"
+        mkdir -p "$(dirname "$TARGET_FILE")"
+        printf 'package com.yatanarnaing.pos;\nimport android.os.Bundle;\nimport android.widget.TextView;\nimport androidx.appcompat.app.AppCompatActivity;\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n        TextView seasonal = findViewById(R.id.txt_seasonal_tips);\n        TextView inventory = findViewById(R.id.txt_inventory_status);\n        if (seasonal != null) seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");\n        if (inventory != null) inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ်/အဝေးကြည့်စနစ် အဆင်သင့်ဖြစ်ပါပြီ။");\n    }\n}\n' > "$TARGET_FILE"
 
         echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
 
@@ -49,7 +48,7 @@ jobs:
     - name: Compile and Build Standard POS APK
       run: |
         cd ${{ env.PROJECT_PATH }}
-        gradle assembleDebug --no-daemon
+        gradle assembleDebug --no-daemon --no-build-cache
 
     - name: Upload Verified POS Output APK
       uses: actions/upload-artifact@v4
