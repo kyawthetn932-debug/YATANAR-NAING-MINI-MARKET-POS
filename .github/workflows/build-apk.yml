@@ -11,14 +11,14 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Create Fresh Android POS Project From Scratch
+    - name: Create Ultimate Advanced POS Project
       run: |
         rm -rf *
         mkdir -p app/src/main/java/com/yatanarnaing/pos
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
 
-        # 1. Create settings.gradle
+        # 1. settings.gradle
         cat << 'EOF' > settings.gradle
         pluginManagement {
             repositories {
@@ -38,15 +38,15 @@ jobs:
         include ':app'
         EOF
 
-        # 2. Create root build.gradle
+        # 2. root build.gradle
         cat << 'EOF' > build.gradle
         plugins {
-            id 'com.android.application' version '8.2.2' apply false
-            id 'com.android.library' version '8.2.2' apply false
+            id 'com.android.application' version '8.1.1' apply false
+            id 'com.android.library' version '8.1.1' apply false
         }
         EOF
 
-        # 3. Create app/build.gradle
+        # 3. app/build.gradle
         cat << 'EOF' > app/build.gradle
         plugins {
             id 'com.android.application'
@@ -54,16 +54,15 @@ jobs:
 
         android {
             namespace 'com.yatanarnaing.pos'
-            compileSdk 34
+            compileSdk 33
 
             defaultConfig {
                 applicationId "com.yatanarnaing.pos"
                 minSdk 24
-                targetSdk 34
-                versionCode 1
-                versionName "1.0"
+                targetSdk 33
+                versionCode 4
+                versionName "4.0"
             }
-
             buildTypes {
                 release {
                     minifyEnabled false
@@ -77,22 +76,20 @@ jobs:
 
         dependencies {
             implementation 'androidx.appcompat:appcompat:1.6.1'
-            implementation 'com.google.android.material:material:1.11.0'
+            implementation 'com.google.android.material:material:1.9.0'
             implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
         }
         EOF
 
-        # 4. Create AndroidManifest.xml
+        # 4. AndroidManifest.xml
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://android.com">
             <application
                 android:allowBackup="true"
-                android:icon="@mipmap/ic_launcher"
-                android:label="Yatanar Naing POS"
-                android:roundIcon="@mipmap/ic_launcher_round"
+                android:label="ရတနာနိုင် AI-POS Pro"
                 android:supportsRtl="true"
-                android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+                android:theme="@style/Theme.AppCompat.Light.NoActionBar">
                 <activity
                     android:name=".MainActivity"
                     android:exported="true">
@@ -105,162 +102,119 @@ jobs:
         </manifest>
         EOF
 
-        # 5. Create activity_main.xml Layout File
+        # 5. activity_main.xml (အဆင့်မြင့် Super UI - မြန်မာသီးသန့်)
         cat << 'EOF' > app/src/main/res/layout/activity_main.xml
         <?xml version="1.0" encoding="utf-8"?>
-        <scrollview xmlns:android="http://android.com"
+        <ScrollView xmlns:android="http://android.com"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <linearlayout
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+            <LinearLayout
+                android:id="@+id/main_background"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
-                <edittext
-                    android:id="@+id/edt_supplier"
+                android:background="#F8F9FA"
+                android:padding="14dp">
+
+                <!-- Title & Theme -->
+                <TextView
+                    android:id="@+id/txt_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Supplier Name" />
-                <edittext
-                    android:id="@+id/edt_ocr_text"
+                    android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E3A8A"
+                    android:gravity="center"
+                    android:padding="6dp"/>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="OCR Text Input" />
-                <linearlayout
-                    android:id="@+id/rows_container"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="10dp">
+                    <Button android:id="@+id/btn_theme_blue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="အပြာ" android:layout_margin="2dp" android:backgroundTint="#2563EB" android:textSize="12sp"/>
+                    <Button android:id="@+id/btn_theme_green" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="အစိမ်း" android:layout_margin="2dp" android:backgroundTint="#16A34A" android:textSize="12sp"/>
+                    <Button android:id="@+id/btn_theme_dark" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="အမှောင်" android:layout_margin="2dp" android:backgroundTint="#1F2937" android:textSize="12sp"/>
+                </LinearLayout>
+
+                <!-- 1. AI & Seasonal Advice Box -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical" />
-            </linearlayout>
-        </scrollview>
-        EOF
+                    android:orientation="vertical"
+                    android:background="#FFFFFF"
+                    android:padding="12dp"
+                    android:layout_marginBottom="10dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="💡 ရာသီအလိုက် + AI ကုန်ပစ္စည်း အကြံပြုချက်"
+                        android:textStyle="bold"
+                        android:textColor="#EA580C"/>
+                    <TextView
+                        android:id="@+id/txt_seasonal_tips"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="တွက်ချက်နေသည်..."
+                        android:textColor="#4B5563"
+                        android:layout_marginTop="4dp"
+                        android:textSize="13sp"/>
+                </LinearLayout>
 
-        # 6. Create Complete MainActivity.java
-        cat << 'EOF' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
-        package com.yatanarnaing.pos;
+                <!-- 2. Product Management (Group & Photo input) -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📦 ကုန်ပစ္စည်းအသစ်ထည့်ခြင်း (ဓာတ်ပုံ/အုပ်စု)"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"
+                    android:textColor="#374151"/>
+                <EditText
+                    android:id="@+id/edt_prod_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="ပစ္စည်းအမည် ရိုက်ပါ"/>
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="6dp">
+                    <Button android:id="@+id/btn_group_food" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="စားသောက်ကုန်" android:backgroundTint="#4B5563" android:textSize="11sp" android:layout_marginRight="2dp"/>
+                    <Button android:id="@+id/btn_group_cosmetic" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="အလှကုန်" android:backgroundTint="#4B5563" android:textSize="11sp" android:layout_marginLeft="2dp"/>
+                </LinearLayout>
+                
+                <Button
+                    android:id="@+id/btn_photo_ocr"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📷 ဓာတ်ပုံရိုက်၍ ပစ္စည်းအမည်သွင်းမည် (OCR)"
+                    android:backgroundTint="#059669"
+                    android:layout_marginBottom="10dp"/>
 
-        import android.os.Bundle;
-        import android.view.View;
-        import android.widget.EditText;
-        import android.widget.LinearLayout;
-        import androidx.appcompat.app.AppCompatActivity;
-        import java.util.ArrayList;
+                <!-- 3. Barcode System -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🏷️ ဘားကုဒ်စနစ် (Barcode System)"
+                    android:textStyle="bold"
+                    android:textColor="#374151"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
+                    <Button android:id="@+id/btn_scan_barcode" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="🔍 ဘားကုဒ် Scan ဖတ်မည်" android:layout_marginRight="2dp" android:backgroundTint="#2563EB"/>
+                    <Button android:id="@+id/btn_gen_barcode" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="🖨️ ဘားကုဒ် ထုတ်မည်" android:layout_marginLeft="2dp" android:backgroundTint="#7C3AED"/>
+                </LinearLayout>
 
-        public class MainActivity extends AppCompatActivity {
-
-            private String currentRole = "";
-            private String currentUser = "";
-            private final DatabaseMock db = new DatabaseMock();
-            private final OcrMock ocr = new OcrMock();
-
-            private LinearLayout rows;
-            private EditText supplier, ocrText;
-
-            @Override
-            protected void Bundle savedInstanceState) {
-                super.onCreate(savedInstanceState);
-                setContentView(R.layout.activity_main);
-
-                rows = findViewById(R.id.rows_container);
-                supplier = findViewById(R.id.edt_supplier);
-                ocrText = findViewById(R.id.edt_ocr_text);
-
-                home();
-            }
-
-            void login(String role, String pin) {
-                String user = db.authenticate(role, pin);
-                if (user == null) {
-                    msg("🔒 Login မအောင်မြင်ပါ", "PIN မှားနေပါသည်။");
-                    return;
-                }
-                currentRole = role;
-                currentUser = user;
-                db.audit(user, role, "LOGIN", "App ထဲသို့ ဝင်ရောက်သည်");
-                home();
-            }
-
-            boolean ownerOnly() {
-                if (!"owner".equals(currentRole)) {
-                    msg("🔒 Owner Only", "ဒီအပိုင်းကို Owner သာ အသုံးပြုနိုင်ပါသည်။");
-                    db.audit(currentUser, currentRole, "DENIED", "Owner-only ဝင်ရန်ကြိုးစားသည်");
-                    return false;
-                }
-                return true;
-            }
-
-            void checkPermission() {
-                msg("🔒 Permission", "ဒီလုပ်ဆောင်ချက်ကို ခွင့်ပြုထားခြင်း မရှိပါ။");
-            }
-
-            void startOcrProcess(View parse, View save) {
-                parse.setOnClickListener(v -> {
-                    rows.removeAllViews();
-                    String text = ocrText.getText().toString();
-                    ArrayList<OcrRow> parsed = parseOcr(text);
-                    if (parsed.isEmpty()) {
-                        toast("ပစ္စည်းစာရင်း မတွေ့ပါ။");
-                        return;
-                    }
-                    toast(parsed.size() + " ခု ပစ္စည်းလိုင်း တွေ့ပါပြီ");
-                });
-            }
-
-            private ArrayList<OcrRow> parseOcr(String text) {
-                ArrayList<OcrRow> list = new ArrayList<>();
-                if(text != null && !text.isEmpty()) {
-                    list.add(new OcrRow("Sample Item", 1, 1500.0));
-                }
-                return list;
-            }
-
-            private void home() {}
-
-            void msg(String title, String message) {
-                android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-                builder.setTitle(title).setMessage(message).setPositiveButton("OK", null).show();
-            }
-
-            void toast(String message) {
-                android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show();
-            }
-
-            double num(String str) {
-                try { return Double.parseDouble(str); } catch (Exception e) { return 0; }
-            }
-
-            String money(Object val) {
-                return String.valueOf(val) + " ကျပ်";
-            }
-
-            static class DatabaseMock {
-                String authenticate(String r, String p) { return "1234".equals(p) ? "User" : null; }
-                void audit(String u, String r, String act, String det) {}
-            }
-            static class OcrMock {}
-            static class OcrRow {
-                String name; int qty; double price;
-                OcrRow(String n, int q, double p) { name=n; qty=q; price=p; }
-            }
-        }
-        EOF
-
-    - name: Set up Java JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-
-    - name: Setup Gradle Wrapper
-      run: |
-        gradle wrapper --gradle-version 8.2
-        chmod +x gradlew
-
-    - name: Build Standalone APK
-      run: ./gradlew assembleDebug --no-daemon
-
-    - name: Upload Clean Output APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: YATANAR-NAING-MINI-MARKET-POS-FINAL-APK
-        path: app/build/outputs/apk/debug/*.apk
+                <!-- 4. Inventory List & Low Stock Alerts Dashboard -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="#FFFFFF"
+                    android:padding="12dp"
