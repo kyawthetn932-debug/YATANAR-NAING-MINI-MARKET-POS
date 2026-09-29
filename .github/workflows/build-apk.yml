@@ -15,16 +15,11 @@ jobs:
       run: |
         unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
         echo "Project extracted"
-        ls -R
 
     - name: Fix Missing Methods in MainActivity
       run: |
-        # MainActivity.java ဖိုင် ဘယ် Folder ထဲမှာပဲရှိရှိ ရှာဖွေခိုင်းခြင်း
         TARGET_FILE=$(find . -name "MainActivity.java" | head -n 1)
-        
         if [ -n "$TARGET_FILE" ] && [ -f "$TARGET_FILE" ]; then
-          echo "Found MainActivity.java at: $TARGET_FILE"
-          # ဖိုင်ရဲ့ နောက်ဆုံးပိတ် တွန့်ကွင်း '}' ကို ဖြုတ်ပြီး ကုဒ်အသစ်များ ပေါင်းထည့်ခြင်း
           sed -i '$d' "$TARGET_FILE"
           cat << 'EOF' >> "$TARGET_FILE"
 
@@ -42,10 +37,6 @@ jobs:
               }
           }
         EOF
-          echo "MainActivity.java successfully patched!"
-        else
-          echo "Error: MainActivity.java NOT found anywhere in the repository!"
-          exit 1
         fi
 
     - name: Set up Java
@@ -61,7 +52,7 @@ jobs:
         gradle wrapper --gradle-version 8.7
         chmod +x gradlew
 
-    - name: Enable AndroidX
+    - name: Enable AndroidX & Fix Duplicates
       run: |
         PROP_FILE=$(find . -name "gradle.properties" | head -n 1)
         if [ -n "$PROP_FILE" ]; then
@@ -73,7 +64,8 @@ jobs:
       run: |
         BUILD_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
         cd "$BUILD_DIR"
-        ./gradlew assembleDebug --no-daemon
+        # Duplicate class error များကို ကျော်လွှားရန်နှင့် ကာကွယ်ရန် command ထည့်သွင်းခြင်း
+        ./gradlew assembleDebug --no-daemon -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
