@@ -17,14 +17,14 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Create POS Project Structure
+    - name: Create Native POS Project
       run: |
         rm -rf *
         mkdir -p app/src/main/java/com/yatanarnaing/pos
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
 
-        # 1. settings.gradle (Google Repository ဆက်တင်ကို တိတိကျကျ ထည့်သွင်းခြင်း)
+        # 1. settings.gradle (Modern Plugin Setup)
         cat << 'EOF' > settings.gradle
         pluginManagement {
             repositories {
@@ -40,15 +40,22 @@ jobs:
                 mavenCentral()
             }
         }
+        rootProject.name = "YatanarNaingPOS"
         include ':app'
         EOF
         
         # 2. build.gradle
-        echo "plugins { id 'com.android.application' version '8.1.1' apply false }" > build.gradle
+        cat << 'EOF' > build.gradle
+        plugins {
+            id 'com.android.application' version '8.1.1' apply false
+        }
+        EOF
 
-        # 3. app/build.gradle
+        # 3. app/build.gradle (Fixed Dependency Style)
         cat << 'EOF' > app/build.gradle
-        plugins { id 'com.android.application' }
+        plugins {
+            id 'com.android.application'
+        }
         android {
             namespace 'com.yatanarnaing.pos'
             compileSdk 33
@@ -56,8 +63,8 @@ jobs:
                 applicationId "com.yatanarnaing.pos"
                 minSdk 24
                 targetSdk 33
-                versionCode 10
-                versionName "10.0"
+                versionCode 11
+                versionName "11.0"
             }
         }
         dependencies {
@@ -65,7 +72,7 @@ jobs:
         }
         EOF
 
-        # 4. app/src/main/AndroidManifest.xml
+        # 4. app/src/main/AndroidManifest.xml (Fixed Namespace)
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://android.com">
@@ -116,10 +123,10 @@ jobs:
         }
         EOF
 
-    - name: Setup Gradle Wrapper
-      run: |
-        gradle wrapper --gradle-version 8.1.1
-        chmod +x gradlew
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: 8.2
 
     - name: Build Smart POS APK
       run: ./gradlew assembleDebug --no-daemon
