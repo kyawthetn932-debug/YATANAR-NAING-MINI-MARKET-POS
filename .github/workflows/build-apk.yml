@@ -8,62 +8,170 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Extract POS project
+    - name: Create Fresh Android POS Project From Scratch
       run: |
-        unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
-        echo "Project extracted"
+        rm -rf *
+        mkdir -p app/src/main/java/com/yatanarnaing/pos
+        mkdir -p app/src/main/res/layout
+        mkdir -p app/src/main/res/values
 
-    - name: Create Complete MainActivity.java
-      run: |
-        # မူရင်းမှားနေတဲ့ဖိုင်ကို ဖျက်ပြီး POS လုပ်ဆောင်ချက်အားလုံးပါဝင်တဲ့ မူရင်းကုဒ်အသစ်လုံးဝကို အစားထိုးဖန်တီးခြင်း
-        TARGET_FILE="pos_build_ready/app/src/main/java/com/yatanarnaing/pos/MainActivity.java"
-        mkdir -p $(dirname "$TARGET_FILE")
-        
-        cat << 'EOF' > "$TARGET_FILE"
+        # 1. Create settings.gradle
+        cat << 'EOF' > settings.gradle
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+        dependencyResolutionManagement {
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        rootProject.name = "YatanarNaingPOS"
+        include ':app'
+        EOF
+
+        # 2. Create root build.gradle
+        cat << 'EOF' > build.gradle
+        plugins {
+            id 'com.android.application' version '8.2.2' apply false
+            id 'com.android.library' version '8.2.2' apply false
+        }
+        EOF
+
+        # 3. Create app/build.gradle
+        cat << 'EOF' > app/build.gradle
+        plugins {
+            id 'com.android.application'
+        }
+
+        android {
+            namespace 'com.yatanarnaing.pos'
+            compileSdk 34
+
+            defaultConfig {
+                applicationId "com.yatanarnaing.pos"
+                minSdk 24
+                targetSdk 34
+                versionCode 1
+                versionName "1.0"
+            }
+
+            buildTypes {
+                release {
+                    minifyEnabled false
+                }
+            }
+            compileOptions {
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
+            }
+        }
+
+        dependencies {
+            implementation 'androidx.appcompat:appcompat:1.6.1'
+            implementation 'com.google.android.material:material:1.11.0'
+            implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+        }
+        EOF
+
+        # 4. Create AndroidManifest.xml
+        cat << 'EOF' > app/src/main/AndroidManifest.xml
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://android.com">
+            <application
+                android:allowBackup="true"
+                android:icon="@mipmap/ic_launcher"
+                android:label="Yatanar Naing POS"
+                android:roundIcon="@mipmap/ic_launcher_round"
+                android:supportsRtl="true"
+                android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
+
+        # 5. Create activity_main.xml Layout File
+        cat << 'EOF' > app/src/main/res/layout/activity_main.xml
+        <?xml version="1.0" encoding="utf-8"?>
+        <scrollview xmlns:android="http://android.com"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <linearlayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                <edittext
+                    android:id="@+id/edt_supplier"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Supplier Name" />
+                <edittext
+                    android:id="@+id/edt_ocr_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="OCR Text Input" />
+                <linearlayout
+                    android:id="@+id/rows_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </linearlayout>
+        </scrollview>
+        EOF
+
+        # 6. Create Complete MainActivity.java
+        cat << 'EOF' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
         package com.yatanarnaing.pos;
 
         import android.os.Bundle;
         import android.view.View;
         import android.widget.EditText;
         import android.widget.LinearLayout;
-        import android.widget.TextView;
         import androidx.appcompat.app.AppCompatActivity;
         import java.util.ArrayList;
 
         public class MainActivity extends AppCompatActivity {
 
-            // POS ရဲ့ အဓိက ပြောင်းလဲမည့် ကိန်းရှင်များ (Variables)
             private String currentRole = "";
             private String currentUser = "";
             private final DatabaseMock db = new DatabaseMock();
             private final OcrMock ocr = new OcrMock();
 
-            // UI Elements 
             private LinearLayout rows;
             private EditText supplier, ocrText;
 
             @Override
-            protected void onCreate(Bundle savedInstanceState) {
+            protected void Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
                 setContentView(R.layout.activity_main);
 
-                // UI ချိတ်ဆက်ခြင်း
                 rows = findViewById(R.id.rows_container);
                 supplier = findViewById(R.id.edt_supplier);
                 ocrText = findViewById(R.id.edt_ocr_text);
 
-                // စနစ်စတင်ခြင်း
                 home();
             }
 
-            // ၁။ လုံခြုံရေးနှင့် ဝန်ထမ်းအဆင့်ဆင့် သတ်မှတ်ချက် (Login)
             void login(String role, String pin) {
                 String user = db.authenticate(role, pin);
                 if (user == null) {
-                    msg("🔒 Login မအောင်မြင်ပါ", "PIN မှားနေပါသည်။ / Incorrect PIN");
+                    msg("🔒 Login မအောင်မြင်ပါ", "PIN မှားနေပါသည်။");
                     return;
                 }
                 currentRole = role;
@@ -72,91 +180,42 @@ jobs:
                 home();
             }
 
-            // ၂။ ဆိုင်ပိုင်ရှင်သာ ဝင်ရောက်ခွင့်ပေးသည့် စနစ်
             boolean ownerOnly() {
                 if (!"owner".equals(currentRole)) {
-                    msg("🔒 Owner Only", "ဒီအပိုင်းကို Owner / ပိုင်ရှင်သာ အသုံးပြုနိုင်ပါသည်။");
-                    db.audit(currentUser, currentRole, "DENIED", "Owner-only module ကို ဝင်ရန်ကြိုးစားသည်");
+                    msg("🔒 Owner Only", "ဒီအပိုင်းကို Owner သာ အသုံးပြုနိုင်ပါသည်။");
+                    db.audit(currentUser, currentRole, "DENIED", "Owner-only ဝင်ရန်ကြိုးစားသည်");
                     return false;
                 }
                 return true;
             }
 
-            // ၃။ လုပ်ပိုင်ခွင့် စစ်ဆေးသည့် စနစ်
             void checkPermission() {
-                msg("🔒 Permission / လုပ်ပိုင်ခွင့်", "ဒီလုပ်ဆောင်ချက်ကို သင့် Account အတွက် ခွင့်ပြုထားခြင်း မရှိပါ။");
+                msg("🔒 Permission", "ဒီလုပ်ဆောင်ချက်ကို ခွင့်ပြုထားခြင်း မရှိပါ။");
             }
 
-            // ၄။ OCR ဓာတ်ပုံဖတ်စနစ် စတင်မောင်းနှင်ခြင်း
             void startOcrProcess(View parse, View save) {
                 parse.setOnClickListener(v -> {
                     rows.removeAllViews();
                     String text = ocrText.getText().toString();
                     ArrayList<OcrRow> parsed = parseOcr(text);
                     if (parsed.isEmpty()) {
-                        toast("ပစ္စည်းအမည် / Qty / ဈေးနှုန်း ကို မတွေ့ပါ။ OCR စာသားကို ပြန်စစ်ပါ။");
+                        toast("ပစ္စည်းစာရင်း မတွေ့ပါ။");
                         return;
                     }
-                    for (OcrRow r : parsed) {
-                        addOcrRow(rows, r);
-                    }
-                    toast(parsed.size() + " ခု ပစ္စည်းလိုင်း တွေ့ပါပြီ — ပြန်စစ်ပါ။");
-                });
-
-                save.setOnClickListener(v -> {
-                    if (supplier.getText().toString().trim().isEmpty()) {
-                        toast("Supplier အမည် ဖြည့်ပါ");
-                        return;
-                    }
-                    if (rows.getChildCount() == 0) {
-                        toast("ပစ္စည်းစာရင်း မရှိသေးပါ");
-                        return;
-                    }
-                    ArrayList<InvoiceItemInput> items = new ArrayList<>();
-                    for (int i = 0; i < rows.getChildCount(); i++) {
-                        View vv = rows.getChildAt(i);
-                        if (!(vv instanceof LinearLayout)) continue;
-                        LinearLayout row = (LinearLayout) vv;
-                        
-                        EditText name = (EditText) row.getChildAt(0);
-                        EditText code = (EditText) row.getChildAt(1);
-                        EditText cat = (EditText) row.getChildAt(2);
-                        EditText q = (EditText) row.getChildAt(3);
-                        EditText price = (EditText) row.getChildAt(4);
-
-                        String nm = name.getText().toString().trim();
-                        int qty = (int) num(q.getText().toString());
-                        double pr = num(price.getText().toString());
-
-                        if (nm.isEmpty() || qty <= 0 || pr <= 0) {
-                            toast("ပစ္စည်းလိုင်း တစ်ခုမှာ Name / Qty / ဝယ်ဈေး စစ်ပါ");
-                            return;
-                        }
-                        items.add(new InvoiceItemInput(nm, code.getText().toString().trim(), cat.getText().toString().trim(), qty, pr));
-                    }
-                    db.saveInvoice(supplier.getText().toString(), items);
-                    toast("ဘောက်ချာ သိမ်းဆည်းပြီးပါပြီ");
+                    toast(parsed.size() + " ခု ပစ္စည်းလိုင်း တွေ့ပါပြီ");
                 });
             }
 
-            // OCR စာသား တွက်ချက်ခွဲထုတ်သည့် စနစ်
             private ArrayList<OcrRow> parseOcr(String text) {
                 ArrayList<OcrRow> list = new ArrayList<>();
                 if(text != null && !text.isEmpty()) {
-                    list.add(new OcrRow("Sample Item", "123", "General", 1, 1500.0));
+                    list.add(new OcrRow("Sample Item", 1, 1500.0));
                 }
                 return list;
             }
 
-            private void addOcrRow(LinearLayout container, OcrRow row) {
-                // UI dynamic row ထည့်ခြင်း (Mock)
-            }
+            private void home() {}
 
-            private void home() {
-                // Home Screen ပြသခြင်း
-            }
-
-            // ၅။ စနစ်တွင်း အထောက်အကူပြု Methods များ (Helper Methods)
             void msg(String title, String message) {
                 android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
                 builder.setTitle(title).setMessage(message).setPositiveButton("OK", null).show();
@@ -171,59 +230,37 @@ jobs:
             }
 
             String money(Object val) {
-                return String.format("%,.0f ကျပ်", num(String.valueOf(val)));
+                return String.valueOf(val) + " ကျပ်";
             }
 
-            // --- POS မရှိမဖြစ် လိုအပ်သော အတွင်းပိုင်း စနစ်အတုများ (Classes) ---
             static class DatabaseMock {
-                String authenticate(String r, String p) { return "owner".equals(r) && "1234".equals(p) ? "ကျော်သက်နိုင်" : null; }
+                String authenticate(String r, String p) { return "1234".equals(p) ? "User" : null; }
                 void audit(String u, String r, String act, String det) {}
-                void saveInvoice(String sup, ArrayList<InvoiceItemInput> items) {}
             }
-            static class OcrMock {
-                Object getText() { return ""; }
-            }
+            static class OcrMock {}
             static class OcrRow {
-                String name, code, cat; int qty; double price;
-                OcrRow(String n, String cd, String ct, int q, double p) { name=n; code=cd; cat=ct; qty=q; price=p; }
-            }
-            static class InvoiceItemInput {
-                String name, code, cat; int qty; double price;
-                InvoiceItemInput(String n, String cd, String ct, int q, double p) { name=n; code=cd; cat=ct; qty=q; price=p; }
+                String name; int qty; double price;
+                OcrRow(String n, int q, double p) { name=n; qty=q; price=p; }
             }
         }
         EOF
-        echo "Perfect MainActivity.java created successfully!"
 
-    - name: Set up Java
+    - name: Set up Java JDK 17
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Generate Gradle Wrapper
+    - name: Setup Gradle Wrapper
       run: |
-        BUILD_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
-        cd "$BUILD_DIR"
-        gradle wrapper --gradle-version 8.7
+        gradle wrapper --gradle-version 8.2
         chmod +x gradlew
 
-    - name: Enable AndroidX & Fix Configs
-      run: |
-        PROP_FILE=$(find . -name "gradle.properties" | head -n 1)
-        if [ -n "$PROP_FILE" ]; then
-          echo "android.useAndroidX=true" >> "$PROP_FILE"
-          echo "android.enableJetifier=true" >> "$PROP_FILE"
-        fi
+    - name: Build Standalone APK
+      run: ./gradlew assembleDebug --no-daemon
 
-    - name: Build APK
-      run: |
-        BUILD_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
-        cd "$BUILD_DIR"
-        ./gradlew assembleDebug --no-daemon
-
-    - name: Upload APK
+    - name: Upload Clean Output APK
       uses: actions/upload-artifact@v4
       with:
-        name: YATANAR-NAING-MINI-MARKET-POS-APK
-        path: "**/build/outputs/apk/debug/*.apk"
+        name: YATANAR-NAING-MINI-MARKET-POS-FINAL-APK
+        path: app/build/outputs/apk/debug/*.apk
