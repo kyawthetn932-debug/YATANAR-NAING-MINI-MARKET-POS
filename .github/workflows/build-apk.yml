@@ -8,51 +8,65 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Extract POS project
-        run: |
-          unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
-          
-          echo "Project extracted"
+    - name: Extract POS project
+      run: |
+        unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
+        echo "Project extracted"
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+    - name: Fix Missing Methods in MainActivity
+      run: |
+        TARGET_FILE="pos_build_ready/app/src/main/java/com/yatanarnaing/pos/MainActivity.java"
+        if [ -f "$TARGET_FILE" ]; then
+          # ဖိုင်ရဲ့ နောက်ဆုံးပိတ် တွန့်ကွင်း '}' ကို ဖြုတ်ပြီး ကုဒ်အသစ်များ အလိုအလျောက် ပေါင်းထည့်ခြင်း
+          sed -i '$d' "$TARGET_FILE"
+          cat << 'EOF' >> "$TARGET_FILE"
 
-      - name: Set up Android SDK
-        run: |
-          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+              private void msg(String title, String message) {
+                  android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+                  builder.setTitle(title).setMessage(message).setPositiveButton("OK", null).show();
+              }
 
-          SDKMANAGER=$(find "$ANDROID_SDK_ROOT/cmdline-tools" -name sdkmanager -type f | head -1)
+              private void toast(String message) {
+                  android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show();
+              }
 
-          yes | "$SDKMANAGER" --licenses || true
+              private double num(String str) {
+                  try { return Double.parseDouble(str); } catch (NumberFormatException e) { return 0; }
+              }
+          }
+        EOF
+          echo "MainActivity.java successfully patched!"
+        else
+          echo "Error: MainActivity.java not found!"
+          exit 1
+        fi
 
-          "$SDKMANAGER" \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-      - name: Enable AndroidX
-        run: |
-          echo "android.useAndroidX=true" >> pos_build_ready/gradle.properties
-          echo "android.enableJetifier=true" >> pos_build_ready/gradle.properties
+    - name: Generate Gradle Wrapper
+      working-directory: pos_build_ready
+      run: |
+        gradle wrapper --gradle-version 8.7
+        chmod +x gradlew
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.7'
+    - name: Enable AndroidX
+      run: |
+        echo "android.useAndroidX=true" >> pos_build_ready/gradle.properties
+        echo "android.enableJetifier=true" >> pos_build_ready/gradle.properties
 
-      - name: Build APK
-        working-directory: pos_build_ready
-        run: gradle assembleDebug --no-daemon
+    - name: Build APK
+      working-directory: pos_build_ready
+      run: ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: YATANAR-NAING-MINI-MARKET-POS-APK
-          path: pos_build_ready/app/build/outputs/apk/debug/app-debug.apk
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: YATANAR-NAING-MINI-MARKET-POS-APK
+        path: pos_build_ready/app/build/outputs/apk/debug/app-debug.apk
