@@ -17,11 +17,6 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup Gradle Wrapper
-      run: |
-        gradle wrapper --gradle-version 8.1.1
-        chmod +x gradlew
-
     - name: Create POS Project Structure
       run: |
         rm -rf *
@@ -29,13 +24,13 @@ jobs:
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
 
-        # settings.gradle
+        # 1. settings.gradle
         echo "include ':app'" > settings.gradle
         
-        # build.gradle
+        # 2. build.gradle
         echo "plugins { id 'com.android.application' version '8.1.1' apply false }" > build.gradle
 
-        # app/build.gradle
+        # 3. app/build.gradle
         cat << 'EOF' > app/build.gradle
         plugins { id 'com.android.application' }
         android {
@@ -45,8 +40,8 @@ jobs:
                 applicationId "com.yatanarnaing.pos"
                 minSdk 24
                 targetSdk 33
-                versionCode 7
-                versionName "7.0"
+                versionCode 8
+                versionName "8.0"
             }
         }
         dependencies {
@@ -54,7 +49,7 @@ jobs:
         }
         EOF
 
-        # app/src/main/AndroidManifest.xml
+        # 4. app/src/main/AndroidManifest.xml
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://android.com">
@@ -69,7 +64,7 @@ jobs:
         </manifest>
         EOF
 
-        # app/src/main/res/layout/activity_main.xml
+        # 5. app/src/main/res/layout/activity_main.xml
         cat << 'EOF' > app/src/main/res/layout/activity_main.xml
         <?xml version="1.0" encoding="utf-8"?>
         <LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">
@@ -79,7 +74,7 @@ jobs:
         </LinearLayout>
         EOF
 
-        # app/src/main/java/com/yatanarnaing/pos/MainActivity.java
+        # 6. app/src/main/java/com/yatanarnaing/pos/MainActivity.java
         cat << 'EOF' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
         package com.yatanarnaing.pos;
         import android.os.Bundle;
@@ -98,11 +93,13 @@ jobs:
         }
         EOF
 
-    - name: Build Smart POS APK
+    - name: Setup Gradle Wrapper
       run: |
         gradle wrapper --gradle-version 8.1.1
         chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon
+
+    - name: Build Smart POS APK
+      run: ./gradlew assembleDebug --no-daemon
 
     - name: Upload Core Output APK
       uses: actions/upload-artifact@v4
