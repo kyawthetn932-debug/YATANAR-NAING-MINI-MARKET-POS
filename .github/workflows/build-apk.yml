@@ -17,119 +17,33 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Create Native POS Project
+    - name: Setup Basic Android Project
       run: |
         rm -rf *
         mkdir -p app/src/main/java/com/yatanarnaing/pos
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
 
-        # 1. settings.gradle
-        cat << 'EOF' > settings.gradle
-        pluginManagement {
-            repositories {
-                google()
-                mavenCentral()
-                gradlePluginPortal()
-            }
-        }
-        dependencyResolutionManagement {
-            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-            repositories {
-                google()
-                mavenCentral()
-            }
-        }
-        rootProject.name = "YatanarNaingPOS"
-        include ':app'
-        EOF
-        
-        # 2. build.gradle
-        cat << 'EOF' > build.gradle
-        plugins {
-            id 'com.android.application' version '8.1.1' apply false
-        }
-        EOF
+        # 1. Settings Configuration
+        echo "include ':app'" > settings.gradle
 
-        # 3. gradle.properties
-        cat << 'EOF' > gradle.properties
-        android.useAndroidX=true
-        android.enableJetifier=true
-        EOF
+        # 2. Build Script
+        echo "plugins { id 'com.android.application' version '8.1.1' apply false }" > build.gradle
 
-        # 4. app/build.gradle
-        cat << 'EOF' > app/build.gradle
-        plugins {
-            id 'com.android.application'
-        }
-        android {
-            namespace 'com.yatanarnaing.pos'
-            compileSdk 33
-            defaultConfig {
-                applicationId "com.yatanarnaing.pos"
-                minSdk 24
-                targetSdk 33
-                versionCode 14
-                versionName "14.0"
-            }
-        }
-        dependencies {
-            implementation 'androidx.appcompat:appcompat:1.6.1'
-        }
-        EOF
+        # 3. AndroidX Enable
+        echo -e "android.useAndroidX=true\nandroid.enableJetifier=true" > gradle.properties
 
-        # 5. app/src/main/AndroidManifest.xml (အမည်သတ်မှတ်ချက်များ တိတိကျကျ ပြင်ဆင်ပြီး)
-        cat << 'EOF' > app/src/main/AndroidManifest.xml
-        <?xml version="1.0" encoding="utf-8"?>
-        <manifest xmlns:android="http://android.com" package="com.yatanarnaing.pos">
-            <application 
-                android:allowBackup="true" 
-                android:label="ရတနာနိုင် AI-POS Pro" 
-                android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-                <activity 
-                    android:name="com.yatanarnaing.pos.MainActivity" 
-                    android:exported="true">
-                    <intent-filter>
-                        <action android:name="android.intent.action.MAIN" />
-                        <category android:name="android.intent.category.LAUNCHER" />
-                    </intent-filter>
-                </activity>
-            </application>
-        </manifest>
-        EOF
+        # 4. App Build Gradle
+        echo -e "plugins { id 'com.android.application' }\nandroid {\n    namespace 'com.yatanarnaing.pos'\n    compileSdk 33\n    defaultConfig {\n        applicationId 'com.yatanarnaing.pos'\n        minSdk 24\n        targetSdk 33\n        versionCode 16\n        versionName '16.0'\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}" > app/build.gradle
 
-        # 6. app/src/main/res/layout/activity_main.xml
-        cat << 'EOF' > app/src/main/res/layout/activity_main.xml
-        <?xml version="1.0" encoding="utf-8"?>
-        <LinearLayout xmlns:android="http://android.com" 
-            android:layout_width="match_parent" 
-            android:layout_height="match_parent" 
-            android:orientation="vertical" 
-            android:padding="16dp">
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>
-            <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>
-            <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>
-        </LinearLayout>
-        EOF
+        # 5. Android Manifest File
+        echo -e '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com">\n    <application android:allowBackup="true" android:label="ရတနာနိုင် AI-POS Pro" android:theme="@style/Theme.AppCompat.Light.NoActionBar">\n        <activity android:name="com.yatanarnaing.pos.MainActivity" android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>' > app/src/main/AndroidManifest.xml
 
-        # 7. app/src/main/java/com/yatanarnaing/pos/MainActivity.java
-        cat << 'EOF' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
-        package com.yatanarnaing.pos;
-        import android.os.Bundle;
-        import android.widget.TextView;
-        import androidx.appcompat.app.AppCompatActivity;
-        public class MainActivity extends AppCompatActivity {
-            @Override
-            protected void onCreate(Bundle savedInstanceState) {
-                super.onCreate(savedInstanceState);
-                setContentView(R.layout.activity_main);
-                TextView seasonal = findViewById(R.id.txt_seasonal_tips);
-                TextView inventory = findViewById(R.id.txt_inventory_status);
-                seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");
-                inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\n• ဘောက်ချာ/အရောင်းစနစ် အဆင်သင့်ဖြစ်ပါပြီ။");
-            }
-        }
-        EOF
+        # 6. Main Layout Layout
+        echo -e '<?xml version="1.0" encoding="utf-8"?>\n<LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">\n    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>\n    <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>\n    <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>\n</LinearLayout>' > app/src/main/res/layout/activity_main.xml
+
+        # 7. MainActivity Java Source Code
+        echo -e 'package com.yatanarnaing.pos;\nimport android.os.Bundle;\nimport android.widget.TextView;\nimport androidx.appcompat.app.AppCompatActivity;\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n        TextView seasonal = findViewById(R.id.txt_seasonal_tips);\n        TextView inventory = findViewById(R.id.txt_inventory_status);\n        seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");\n        inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ် အဆင်သင့်ဖြစ်ပါပြီ။");\n    }\n}' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
