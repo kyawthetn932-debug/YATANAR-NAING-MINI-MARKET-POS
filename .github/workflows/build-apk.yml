@@ -20,31 +20,18 @@ jobs:
     - name: Setup Advanced Gradle Build Tool
       uses: gradle/actions/setup-gradle@v4
       with:
-        gradle-version: 8.7 # စနစ်တောင်းဆိုနေသော ဗားရှင်းအမြင့်သို့ ကွက်တိမြှင့်တင်ပေးခြင်း
+        gradle-version: 8.7
 
     - name: Extract and Audit POS Project
       run: |
-        if [ -f YATANAR_NAING_POS_APK_BUILD_FIXED.zip ]; then
-          unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
-          echo "Zip extracted successfully."
-        else
-          echo "Error: Zip file not found!"
-          exit 1
-        fi
-
+        unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
         BUILD_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
-        echo "Gradle project found at: $BUILD_DIR"
         echo "PROJECT_DIR=$BUILD_DIR" >> $GITHUB_ENV
 
     - name: Apply Strict AndroidX Properties
       run: |
         PROP_FILE="${{ env.PROJECT_DIR }}/gradle.properties"
-        if [ -f "$PROP_FILE" ]; then
-          echo "android.useAndroidX=true" >> "$PROP_FILE"
-          echo "android.enableJetifier=true" >> "$PROP_FILE"
-        else
-          echo -e "android.useAndroidX=true\nandroid.enableJetifier=true" > "$PROP_FILE"
-        fi
+        echo -e "android.useAndroidX=true\nandroid.enableJetifier=true" > "$PROP_FILE"
 
     - name: Compile and Build Standard POS APK
       run: |
