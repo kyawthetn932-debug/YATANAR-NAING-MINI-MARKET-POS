@@ -36,16 +36,31 @@ jobs:
         echo -e "android.useAndroidX=true\nandroid.enableJetifier=true" > gradle.properties
 
         # 4. App Build Gradle
-        echo -e "plugins { id 'com.android.application' }\nandroid {\n    namespace 'com.yatanarnaing.pos'\n    compileSdk 33\n    defaultConfig {\n        applicationId 'com.yatanarnaing.pos'\n        minSdk 24\n        targetSdk 33\n        versionCode 17\n        versionName '17.0'\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}" > app/build.gradle
+        echo -e "plugins { id 'com.android.application' }\nandroid {\n    namespace 'com.yatanarnaing.pos'\n    compileSdk 33\n    defaultConfig {\n        applicationId 'com.yatanarnaing.pos'\n        minSdk 24\n        targetSdk 33\n        versionCode 18\n        versionName '18.0'\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}" > app/build.gradle
 
-        # 5. Android Manifest File
-        echo -e '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com">\n    <application android:allowBackup="true" android:label="ရတနာနိုင် AI-POS Pro" android:theme="@style/Theme.AppCompat.Light.NoActionBar">\n        <activity android:name="com.yatanarnaing.pos.MainActivity" android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>' > app/src/main/AndroidManifest.xml
+        # 5. Correct Android Manifest File (Using Official Schemas URI)
+        echo '<?xml version="1.0" encoding="utf-8"?>' > app/src/main/AndroidManifest.xml
+        echo '<manifest xmlns:android="http://android.com">' >> app/src/main/AndroidManifest.xml
+        echo '    <application android:allowBackup="true" android:label="ရတနာနိုင် AI-POS Pro" android:theme="@style/Theme.AppCompat.Light.NoActionBar">' >> app/src/main/AndroidManifest.xml
+        echo '        <activity android:name="com.yatanarnaing.pos.MainActivity" android:exported="true">' >> app/src/main/AndroidManifest.xml
+        echo '            <intent-filter>' >> app/src/main/AndroidManifest.xml
+        echo '                <action android:name="android.intent.action.MAIN" />' >> app/src/main/AndroidManifest.xml
+        echo '                <category android:name="android.intent.category.LAUNCHER" />' >> app/src/main/AndroidManifest.xml
+        echo '            </intent-filter>' >> app/src/main/AndroidManifest.xml
+        echo '        </activity>' >> app/src/main/AndroidManifest.xml
+        echo '    </application>' >> app/src/main/AndroidManifest.xml
+        echo '</manifest>' >> app/src/main/AndroidManifest.xml
 
-        # 6. Main Layout Layout
-        echo -e '<?xml version="1.0" encoding="utf-8"?>\n<LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">\n    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>\n    <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>\n    <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>\n</LinearLayout>' > app/src/main/res/layout/activity_main.xml
+        # 6. Main Layout XML File
+        echo '<?xml version="1.0" encoding="utf-8"?>' > app/src/main/res/layout/activity_main.xml
+        echo '<LinearLayout xmlns:android="http://android.com" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">' >> app/src/main/res/layout/activity_main.xml
+        echo '    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="🏪 ရတနာနိုင် Mini Market စနစ်သစ်" android:textSize="22sp" android:textStyle="bold" android:gravity="center"/>' >> app/src/main/res/layout/activity_main.xml
+        echo '    <TextView android:id="@+id/txt_seasonal_tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ရာသီအလိုက် အကြံပြုချက်" android:layout_marginTop="10dp"/>' >> app/src/main/res/layout/activity_main.xml
+        echo '    <TextView android:id="@+id/txt_inventory_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="လက်ကျန်နှင့် အလိုအလျောက် သတိပေးချက်စာရင်း" android:layout_marginTop="10dp"/>' >> app/src/main/res/layout/activity_main.xml
+        echo '</LinearLayout>' >> app/src/main/res/layout/activity_main.xml
 
         # 7. MainActivity Java Source Code
-        echo -e 'package com.yatanarnaing.pos;\nimport android.os.Bundle;\nimport android.widget.TextView;\nimport androidx.appcompat.app.AppCompatActivity;\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n        TextView seasonal = findViewById(R.id.txt_seasonal_tips);\n        TextView inventory = findViewById(R.id.txt_inventory_status);\n        seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");\n        inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ် အဆင်သင့်ဖြစ်ပါပြီ။");\n    }\n}' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
+        echo -e 'package com.yatanarnaing.pos;\nimport android.os.Bundle;\nimport android.widget.TextView;\nimport androidx.appcompat.app.AppCompatActivity;\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) { \n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n        TextView seasonal = findViewById(R.id.txt_seasonal_tips);\n        TextView inventory = findViewById(R.id.txt_inventory_status);\n        seasonal.setText("☀️ AI ရာသီအလိုက် အကြံပြုချက်: ရေဖျော်ဖျော်ရည်၊ အအေးမိန့်၊ သနပ်ခါးများ ပိုမိုတင်ထားပါ။");\n        inventory.setText("📦 [အလိုအလျောက် လက်ကျန်ကုန်နည်း သတိပေးချက်]\\n• ကြက်ကြော်မှုန့် - လက်ကျန် ၃ ထုပ်ပဲ ရှိတော့သည်!\\n• ဘောက်ချာ/အရောင်းစနစ် အဆင်သင့်ဖြစ်ပါပြီ။");\n    }\n}' > app/src/main/java/com/yatanarnaing/pos/MainActivity.java
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
