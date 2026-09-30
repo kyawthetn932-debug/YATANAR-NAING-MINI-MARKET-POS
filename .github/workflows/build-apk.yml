@@ -29,13 +29,19 @@ jobs:
           
           PROJECT_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
           
-          # MainActivity.java လမ်းကြောင်းကို အတိအကျရှာပြီး ကုဒ်အသစ်ပြန်ထည့်ခြင်း
+          # Manifest ထဲက တကယ့် Package Name အစစ်ကို ရှာဖွေခြင်း
+          MANIFEST_FILE=$(find . -name "AndroidManifest.xml" | head -n 1)
+          if [ -f "$MANIFEST_FILE" ]; then
+            PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' "$MANIFEST_FILE" || echo "")
+            if [ -z "$PACKAGE_NAME" ]; then
+              PACKAGE_NAME=$(grep -oP 'package \K[a-zA-Z0-9_.]+' $(find . -name "MainActivity.java" | head -n 1) | tr -d ';')
+            fi
+          fi
+          
+          # မှန်ကန်သော လမ်းကြောင်းအတိုင်း MainActivity.java ကို သန့်စင်ပြီး အသစ်ပြန်ဆောက်ခြင်း
           MAIN_ACTIVITY=$(find . -name "MainActivity.java" | head -n 1)
           if [ -f "$MAIN_ACTIVITY" ]; then
-            PKG_NAME=$(grep -m 1 "package " "$MAIN_ACTIVITY")
-            
-            # EOF စနစ်ကို Linux ပတ်ဝန်းကျင်နှင့် ကိုက်ညီအောင် သီးသန့်ခွဲရေးခြင်း
-            echo "$PKG_NAME" > "$MAIN_ACTIVITY"
+            echo "package $PACKAGE_NAME;" > "$MAIN_ACTIVITY"
             echo "" >> "$MAIN_ACTIVITY"
             echo "import android.os.Bundle;" >> "$MAIN_ACTIVITY"
             echo "import androidx.appcompat.app.AppCompatActivity;" >> "$MAIN_ACTIVITY"
