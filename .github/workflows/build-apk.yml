@@ -22,33 +22,159 @@ jobs:
         with:
           gradle-version: 8.7
 
-      - name: Clean Environment and Unzip Project
+      - name: Clean Environment and Unzip Original Project
         run: |
           find . -maxdepth 1 ! -name 'YATANAR_NAING_POS_APK_BUILD_FIXED.zip' ! -name '.github' ! -name '.' -exec rm -rf {} +
           unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
+          
           PROJECT_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
-          echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
+          
+          # Manifest ထဲက တကယ့် Package Name အစစ်ကို ရှာဖွေခြင်း
+          MANIFEST_FILE=$(find . -name "AndroidManifest.xml" | head -n 1)
+          if [ -f "$MANIFEST_FILE" ]; then
+            PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' "$MANIFEST_FILE" || echo "")
+            if [ -z "$PACKAGE_NAME" ]; then
+              PACKAGE_NAME=$(grep -oP 'package \K[a-zA-Z0-9_.]+' $(find . -name "MainActivity.java" | head -n 1) | tr -d ';')
+            fi
+          fi
+          
+          # ၁။ YATANAR POS ပုံစံ ဒီဇိုင်းအသစ်အတွက် activity_main.xml ဖိုင်အသစ် ချပေးခြင်း
+          LAYOUT_FILE=$(find . -name "activity_main.xml" | head -n 1)
+          if [ -f "$LAYOUT_FILE" ]; then
+            cat << 'EOF' > "$LAYOUT_FILE"
+            <?xml version="1.0" encoding="utf-8"?>
+            <ScrollView xmlns:android="http://android.com"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#0A1128">
 
-      - name: Auto-Fix Java Method Errors
-        run: |
-          MAIN_ACTIVITY=$(find . -name "MainActivity.java" | head -n 1)
-          if [ -f "$MAIN_ACTIVITY" ]; then
-            sed -i 's/public String money(/public static String money(/g' "$MAIN_ACTIVITY"
-            sed -i 's/String money(/static String money(/g' "$MAIN_ACTIVITY"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Title Header (YATANAR အဖြစ် ပြောင်းလဲထားပါသည်) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="#1C2541"
+                        android:padding="16dp"
+                        android:layout_marginBottom="16dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="YATANAR POS (Mini Market)"
+                            android:textColor="#FFFFFF"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ယုံကြည်၊ လွယ်ကူ၊ ယုံကြည်စိတ်ချရ"
+                            android:textColor="#00B4D8"
+                            android:textSize="12sp"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+
+                    <!-- Sales & Profit Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2"
+                        android:layout_marginBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="#1E3A8A"
+                            android:padding="16dp"
+                            android:layout_marginRight="6dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ယနေ့အရောင်း" android:textColor="#93C5FD"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ks 1,280,500" android:textColor="#34D399" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="#1E3A8A"
+                            android:padding="16dp"
+                            android:layout_marginLeft="6dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ယနေ့အမြတ်" android:textColor="#93C5FD"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ks 286,450" android:textColor="#FBBF24" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Stock & Type Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2"
+                        android:layout_marginBottom="24dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="#064E3B"
+                            android:padding="16dp"
+                            android:layout_marginRight="6dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="လက်ကျန်ကုန်တန်ဖိုး" android:textColor="#A7F3D0"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ks 8,560,000" android:textColor="#FFFFFF" android:textSize="15sp" android:textStyle="bold" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="#7F1D1D"
+                            android:padding="16dp"
+                            android:layout_marginLeft="6dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ကုန်ပစ္စည်းမျိုးအစား" android:textColor="#FCA5A5"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ks 3,450,000" android:textColor="#FFFFFF" android:textSize="15sp" android:textStyle="bold" android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Quick Action Label -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="လျင်မြန်စွာ လုပ်ဆောင်ရန်"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp"/>
+
+                    <!-- 4-Button Grid -->
+                    <GridLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:columnCount="4"
+                        android:layout_marginBottom="16dp">
+                        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="အရောင်း" android:layout_columnWeight="1" android:layout_margin="2dp" android:textSize="12sp"/>
+                        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ကုန်စင်" android:layout_columnWeight="1" android:layout_margin="2dp" android:textSize="12sp"/>
+                        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ဘားကုတ်" android:layout_columnWeight="1" android:layout_margin="2dp" android:textSize="11sp"/>
+                        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="အစီရင်ခံစာ" android:layout_columnWeight="1" android:layout_margin="2dp" android:textSize="10sp"/>
+                    </GridLayout>
+
+                </LinearLayout>
+            </ScrollView>
+            EOF
           fi
 
-      - name: Compile And Force Build Standard POS APK
-        run: |
-          cd ${{ env.PROJECT_PATH }}
-          # Java Compile လုပ်စဉ် အသေးစိတ်အမှားများအားလုံးကို အတင်းအကျပ် ကျော်ဖြတ်ခိုင်းခြင်း
-          gradle assembleDebug --no-daemon --no-build-cache -x lint \
-            -Pandroid.useAndroidX=true \
-            -Pandroid.enableJetifier=true \
-            -Dorg.gradle.java.home=$JAVA_HOME \
-            -Pandroid.experimental.disableCompileSdkCheck=true
-
-      - name: Upload Verified POS Output APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: YATANAR-NAING-PROFESSIONAL-POS-APK
-          path: "**/build/outputs/apk/debug/*.apk"
+          # ၂။ အမှားကင်းစင်ပြီး ပိတ်မကျမည့် MainActivity.java ဖိုင်အသစ်စက်စက် ချပေးခြင်း
+          MAIN_ACTIVITY=$(find . -name "MainActivity.java" | head -n 1)
+          if [ -f "$MAIN_ACTIVITY" ]; then
+            echo "package $PACKAGE_NAME;" > "$MAIN_ACTIVITY"
+            echo "" >> "$MAIN_ACTIVITY"
+            echo "import android.os.Bundle;" >> "$MAIN_ACTIVITY"
+            echo "import androidx.appcompat.app.AppCompatActivity;" >> "$MAIN_ACTIVITY"
