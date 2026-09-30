@@ -31,14 +31,13 @@ jobs:
           MANIFEST_FILE=$(find . -name "AndroidManifest.xml" | head -n 1)
           PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' "$MANIFEST_FILE" || echo "com.yatanarnaing.pos")
           
-          # ၁။ ဖုန်း Screen ပေါ်တွင်ပေါ်မည့် App နာမည်ကို YATANAR POS သို့ အတင်းအကျပ် ပြောင်းလဲခြင်း
+          # ၁။ App နာမည်ကို strings.xml ထဲတွင် YATANAR POS သို့ အတင်းအကျပ် ပြောင်းလဲခြင်း
           STRINGS_FILE=$(find . -name "strings.xml" | head -n 1)
           if [ -f "$STRINGS_FILE" ]; then
-            # app_name တဂ်တစ်ခုလုံးကို YATANAR POS (Mini Market) သို့ အစားထိုးပြင်ဆင်ခြင်း
             sed -i 's|<string name="app_name">.*</string>|<string name="app_name">YATANAR POS (Mini Market)</string>|g' "$STRINGS_FILE"
           fi
           
-          # ၂။ activity_main.xml ဒီဇိုင်းကို တိုက်ရိုက်ဆောက်ခြင်း
+          # ၂။ activity_main.xml ဒီဇိုင်းကို အသစ်စက်စက် တိုက်ရိုက်ဆောက်ခြင်း
           LAYOUT_FILE=$(find . -name "activity_main.xml" | head -n 1)
           if [ -f "$LAYOUT_FILE" ]; then
             echo '<?xml version="1.0" encoding="utf-8"?>' > "$LAYOUT_FILE"
@@ -66,6 +65,13 @@ jobs:
             echo "    }" >> "$MAIN_ACTIVITY"
             echo "}" >> "$MAIN_ACTIVITY"
           fi
+
+          # ၄။ Launcher Crash ပြဿနာကိုဖြေရှင်းရန် AndroidManifest.xml ကို အလိုအလျောက် ပြုပြင်ခြင်း
+          if [ -f "$MANIFEST_FILE" ]; then
+            # MainActivity ကို လမ်းကြောင်းမှန်ကန်စွာဖြင့် စတင်ပွင့်ရမည့် Launcher အဖြစ် အတင်းအကျပ် သတ်မှတ်ခြင်း
+            sed -i 's|android:name=".*MainActivity"|android:name=".MainActivity"|g' "$MANIFEST_FILE"
+          fi
+          
           echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
 
       - name: Compile And Force Build POS APK
