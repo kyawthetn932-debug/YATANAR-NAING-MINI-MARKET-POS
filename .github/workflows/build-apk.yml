@@ -38,7 +38,139 @@ jobs:
             fi
           fi
           
-          # မှန်ကန်သော လမ်းကြောင်းအတိုင်း MainActivity.java ကို သန့်စင်ပြီး အသစ်ပြန်ဆောက်ခြင်း
+          # ၁။ ပုံပါ ဒီဇိုင်းအတိုင်း activity_main.xml ကို ဆောက်လုပ်ခြင်း
+          LAYOUT_FILE=$(find . -name "activity_main.xml" | head -n 1)
+          if [ -f "$LAYOUT_FILE" ]; then
+            cat << 'EOF' > "$LAYOUT_FILE"
+            <?xml version="1.0" encoding="utf-8"?>
+            <ScrollView xmlns:android="http://android.com"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#0B132B">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Header: MM POS Mini Market -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#1C2541"
+                        android:padding="16dp"
+                        android:layout_marginBottom="16dp">
+                        <TextView
+                            android:id="@+id/title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="MM POS (Mini Market)"
+                            android:textColor="#FFFFFF"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/title"
+                            android:text="ယုံကြည်၊ လွယ်ကူ၊ ယုံကြည်စိတ်ချရ"
+                            android:textColor="#5BC0BE"
+                            android:textSize="12sp" />
+                    </RelativeLayout>
+
+                    <!-- Row 1: အရောင်းနှင့် အမြတ် Card များ -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2"
+                        android:layout_marginBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="#1D3557"
+                            android:padding="12dp"
+                            android:layout_marginRight="6dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ယနေ့အရောင်း" android:textColor="#FFFFFF"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ks 1,280,500" android:textColor="#00E676" android:textSize="16sp" android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="#1D3557"
+                            android:padding="12dp"
+                            android:layout_marginLeft="6dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ယနေ့အမြတ်" android:textColor="#FFFFFF"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ks 286,450" android:textColor="#FFD600" android:textSize="16sp" android:textStyle="bold"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Row 2: လက်ကျန်ကုန်တန်ဖိုးနှင့် ကုန်စင်မျိုးအစား -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2"
+                        android:layout_marginBottom="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="#31572C"
+                            android:padding="12dp"
+                            android:layout_marginRight="6dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="လက်ကျန်ကုန်တန်ဖိုး" android:textColor="#FFFFFF"/>
+                            <TextView android:layout_width="wrap_width" android:layout_height="wrap_content" android:text="Ks 8,560,000" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="#E63946"
+                            android:padding="12dp"
+                            android:layout_marginLeft="6dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ကုန်ပစ္စည်းမျိုးအစား" android:textColor="#FFFFFF"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ks 3,450,000" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Quick Actions Buttons (အမြန်လုပ်ဆောင်ရန် ခလုတ်များ) -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="လျင်မြန်စွာ လုပ်ဆောင်ရန်"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <GridLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:columnCount="4"
+                        android:rowCount="1"
+                        android:layout_marginBottom="16dp">
+                        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="အရောင်း" android:textSize="11sp"/>
+                        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ကုန်စင်" android:textSize="11sp"/>
+                        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ဘားကုတ်" android:textSize="11sp"/>
+                        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="အစီရင်ခံစာ" android:textSize="11sp"/>
+                    </GridLayout>
+
+                </LinearLayout>
+            </ScrollView>
+            EOF
+          fi
+
+          # ၂။ MainActivity.java ကို သန့်စင်ပြီး Package အမှန်ဖြင့် အစားထိုးခြင်း
           MAIN_ACTIVITY=$(find . -name "MainActivity.java" | head -n 1)
           if [ -f "$MAIN_ACTIVITY" ]; then
             echo "package $PACKAGE_NAME;" > "$MAIN_ACTIVITY"
@@ -50,34 +182,3 @@ jobs:
             echo "    @Override" >> "$MAIN_ACTIVITY"
             echo "    protected void onCreate(Bundle savedInstanceState) {" >> "$MAIN_ACTIVITY"
             echo "        super.onCreate(savedInstanceState);" >> "$MAIN_ACTIVITY"
-            echo "        int layoutId = getResources().getIdentifier(\"activity_main\", \"layout\", getPackageName());" >> "$MAIN_ACTIVITY"
-            echo "        if (layoutId != 0) {" >> "$MAIN_ACTIVITY"
-            echo "            setContentView(layoutId);" >> "$MAIN_ACTIVITY"
-            echo "        }" >> "$MAIN_ACTIVITY"
-            echo "    }" >> "$MAIN_ACTIVITY"
-            echo "}" >> "$MAIN_ACTIVITY"
-          fi
-          
-          echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
-
-      - name: Resolve Dependency and Formatting Conflicts
-        run: |
-          PROP_FILE="${{ env.PROJECT_PATH }}/gradle.properties"
-          printf "android.useAndroidX=true\nandroid.enableJetifier=true\nandroid.defaults.buildfeatures.buildconfig=true\n" > "$PROP_FILE"
-          
-          APP_GRADLE="${{ env.PROJECT_PATH }}/app/build.gradle"
-          if [ -f "$APP_GRADLE" ]; then
-            sed -i 's/implementation "androidx.room:room-runtime:.*/implementation "androidx.room:room-runtime:2.6.1"/g' "$APP_GRADLE"
-            sed -i 's/annotationProcessor "androidx.room:room-compiler:.*/annotationProcessor "androidx.room:room-compiler:2.6.1"/g' "$APP_GRADLE"
-          fi
-
-      - name: Compile And Build Standard POS APK
-        run: |
-          cd ${{ env.PROJECT_PATH }}
-          gradle assembleDebug --no-daemon --no-build-cache -x lint -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
-
-      - name: Upload Verified POS Output APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: YATANAR-NAING-PROFESSIONAL-POS-APK
-          path: "**/build/outputs/apk/debug/*.apk"
