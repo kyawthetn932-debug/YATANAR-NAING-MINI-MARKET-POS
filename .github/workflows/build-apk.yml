@@ -31,7 +31,14 @@ jobs:
           MANIFEST_FILE=$(find . -name "AndroidManifest.xml" | head -n 1)
           PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' "$MANIFEST_FILE" || echo "com.yatanarnaing.pos")
           
-          # ၁။ activity_main.xml ဒီဇိုင်းကို အမှားကင်းစင်သော စနစ်ဖြင့် တိုက်ရိုက်ဆောက်ခြင်း
+          # ၁။ ဖုန်း Screen ပေါ်တွင်ပေါ်မည့် App နာမည်ကို YATANAR POS သို့ အတင်းအကျပ် ပြောင်းလဲခြင်း
+          STRINGS_FILE=$(find . -name "strings.xml" | head -n 1)
+          if [ -f "$STRINGS_FILE" ]; then
+            # app_name တဂ်တစ်ခုလုံးကို YATANAR POS (Mini Market) သို့ အစားထိုးပြင်ဆင်ခြင်း
+            sed -i 's|<string name="app_name">.*</string>|<string name="app_name">YATANAR POS (Mini Market)</string>|g' "$STRINGS_FILE"
+          fi
+          
+          # ၂။ activity_main.xml ဒီဇိုင်းကို တိုက်ရိုက်ဆောက်ခြင်း
           LAYOUT_FILE=$(find . -name "activity_main.xml" | head -n 1)
           if [ -f "$LAYOUT_FILE" ]; then
             echo '<?xml version="1.0" encoding="utf-8"?>' > "$LAYOUT_FILE"
@@ -44,7 +51,7 @@ jobs:
             echo '</LinearLayout>' >> "$LAYOUT_FILE"
           fi
 
-          # ၂။ MainActivity.java ကို စနစ်တကျ ပြန်လည်တည်ဆောက်ခြင်း
+          # ၃။ MainActivity.java ကို စနစ်တကျ ပြန်လည်တည်ဆောက်ခြင်း
           MAIN_ACTIVITY=$(find . -name "MainActivity.java" | head -n 1)
           if [ -f "$MAIN_ACTIVITY" ]; then
             echo "package $PACKAGE_NAME;" > "$MAIN_ACTIVITY"
