@@ -31,13 +31,13 @@ jobs:
           MANIFEST_FILE=$(find . -name "AndroidManifest.xml" | head -n 1)
           PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' "$MANIFEST_FILE" || echo "com.yatanarnaing.pos")
           
-          # ၁။ App display name ကို strings.xml ထဲတွင် အတင်းအကျပ် ပြောင်းလဲခြင်း
+          # ၁။ App နာမည်ကို strings.xml ထဲတွင် YATANAR POS သို့ အပြီးသတ် ပြောင်းလဲခြင်း
           STRINGS_FILE=$(find . -name "strings.xml" | head -n 1)
           if [ -f "$STRINGS_FILE" ]; then
             sed -i 's|<string name="app_name">.*</string>|<string name="app_name">YATANAR POS (Mini Market)</string>|g' "$STRINGS_FILE"
           fi
           
-          # ၂။ activity_main.xml ဒီဇိုင်းကို အသစ်စက်စက် တိုက်ရိုက်ဆောက်ခြင်း
+          # ၂။ activity_main.xml ဒီဇိုင်းကို အမှားကင်းစင်သော echo စနစ်ဖြင့် ဆောက်လုပ်ခြင်း
           LAYOUT_FILE=$(find . -name "activity_main.xml" | head -n 1)
           if [ -f "$LAYOUT_FILE" ]; then
             echo '<?xml version="1.0" encoding="utf-8"?>' > "$LAYOUT_FILE"
@@ -50,7 +50,7 @@ jobs:
             echo '</LinearLayout>' >> "$LAYOUT_FILE"
           fi
 
-          # ၃။ MainActivity.java ကို စနစ်တကျ ပြန်လည်တည်ဆောက်ခြင်း
+          # ၃။ ဖွင့်ပိတ်မဖြစ်မည့် MainActivity.java ကို သီးသန့်စနစ်ဖြင့် ပြန်လည်တည်ဆောက်ခြင်း
           MAIN_ACTIVITY=$(find . -name "MainActivity.java" | head -n 1)
           if [ -f "$MAIN_ACTIVITY" ]; then
             echo "package $PACKAGE_NAME;" > "$MAIN_ACTIVITY"
@@ -66,12 +66,16 @@ jobs:
             echo "}" >> "$MAIN_ACTIVITY"
           fi
 
-          # ၄။ Launcher Crash များနှင့် နောက်ကွယ်မှ ဒေတာကလန်တိုက်မှုများကို တားဆီးရန် အပြီးသတ်ပြုပြင်ခြင်း
+          # ၄။ ဖွင့်ပိတ်ဖြစ်စေသော နောက်ကွယ်မှ ဖိုင်ဟောင်းများအားလုံးကို အပြီးတိုင် ပိတ်ချခြင်း
           if [ -f "$MANIFEST_FILE" ]; then
+            # Application Tag ထဲရှိ Custom Application Class သတ်မှတ်ချက်ဟောင်းကို အပြီးသတ်ဖယ်ရှားခြင်း
             sed -i 's|android:name="[^"]*Application[^"]*"||g' "$MANIFEST_FILE"
+            # Theme မကိုက်ညီမှုကြောင့် Crash ဖြစ်ခြင်းကို ကာကွယ်ရန် Safe Theme ပြောင်းလဲခြင်း
             sed -i 's|android:theme="[^"]*"|android:theme="@style/Theme.AppCompat.Light.NoActionBar"|g' "$MANIFEST_FILE"
+            # MainActivity ကို လမ်းကြောင်းအမှန် သတ်မှတ်ခြင်း
             sed -i 's|android:name=".*MainActivity"|android:name=".MainActivity"|g' "$MANIFEST_FILE"
           fi
+          
           echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
 
       - name: Compile And Force Build POS APK
@@ -79,10 +83,12 @@ jobs:
           cd ${{ env.PROJECT_PATH }}
           printf "android.useAndroidX=true\nandroid.enableJetifier=true\n" > gradle.properties
           
+          # Themes / Styles ကွဲလွဲမှုများအားလုံးကို သန့်စင်ပေးခြင်း
           STYLES_FILE=$(find . -name "styles.xml" -o -name "themes.xml" | head -n 1)
           if [ ! -z "$STYLES_FILE" ]; then
              echo '<resources><style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"></style></resources>' > "$STYLES_FILE"
           fi
+          
           gradle assembleDebug --no-daemon --no-build-cache -x lint
 
       - name: Upload Verified POS Output APK
