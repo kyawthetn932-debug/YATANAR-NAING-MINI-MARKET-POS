@@ -22,49 +22,14 @@ jobs:
         with:
           gradle-version: 8.7
 
-      - name: Clean Environment and Build Fresh POS Project
+      - name: Clean Environment and Unzip Original Project Only
         run: |
+          # လက်ရှိပတ်ဝန်းကျင်ကို ရှင်းလင်းပြီး သင့်မူရင်းဇစ်ဖိုင်ကိုသာ အသုံးပြုရန် ပြင်ဆင်ခြင်း
           find . -maxdepth 1 ! -name 'YATANAR_NAING_POS_APK_BUILD_FIXED.zip' ! -name '.github' ! -name '.' -exec rm -rf {} +
           unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
           
+          # ပရောဂျက်လမ်းကြောင်းကို အလိုအလျောက် ရှာဖွေခြင်း
           PROJECT_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
-          
-          # Layout xml ဖိုင်ကို စနစ်တကျ ပြန်ဆောက်ခြင်း
-          LAYOUT_FILE="$PROJECT_DIR/app/src/main/res/layout/activity_main.xml"
-          mkdir -p "$(dirname "$LAYOUT_FILE")"
-          cat << 'EOF' > "$LAYOUT_FILE"
-          <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://android.com"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:gravity="center">
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="Yatanar Naing POS"
-                  android:textSize="24sp"/>
-          </LinearLayout>
-          EOF
-
-          # ပင်မ Java ဖိုင်ကို စနစ်တကျ ပြန်ဆောက်ခြင်း (onCreate အမှန်ဖြင့် ပြန်ပြင်ထားပါသည်)
-          TARGET_FILE="$PROJECT_DIR/app/src/main/java/com/yatanarnaing/pos/MainActivity.java"
-          mkdir -p "$(dirname "$TARGET_FILE")"
-          cat << 'EOF' > "$TARGET_FILE"
-          package com.yatanarnaing.pos;
-          
-          import android.os.Bundle;
-          import androidx.appcompat.app.AppCompatActivity;
-          
-          public class MainActivity extends AppCompatActivity {
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-                  setContentView(R.layout.activity_main);
-              }
-          }
-          EOF
-          
           echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
 
       - name: Apply Strict AndroidX Properties
