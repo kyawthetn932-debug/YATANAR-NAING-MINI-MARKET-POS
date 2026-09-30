@@ -31,7 +31,7 @@ jobs:
           MANIFEST_FILE=$(find . -name "AndroidManifest.xml" | head -n 1)
           PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' "$MANIFEST_FILE" || echo "com.yatanarnaing.pos")
           
-          # ၁။ App နာမည်ကို strings.xml ထဲတွင် "YATANAR POS" သို့ ပြောင်းလဲခြင်း
+          # ၁။ App display name ကို strings.xml ထဲတွင် အတင်းအကျပ် ပြောင်းလဲခြင်း
           STRINGS_FILE=$(find . -name "strings.xml" | head -n 1)
           if [ -f "$STRINGS_FILE" ]; then
             sed -i 's|<string name="app_name">.*</string>|<string name="app_name">YATANAR POS (Mini Market)</string>|g' "$STRINGS_FILE"
@@ -66,18 +66,12 @@ jobs:
             echo "}" >> "$MAIN_ACTIVITY"
           fi
 
-          # ၄။ ***အရေးအကြီးဆုံးအဆင့်*** - Background Crash ဖြစ်စေသော အကြောင်းရင်းများကို Manifest ထဲတွင် ဖျက်ဆီးခြင်း
+          # ၄။ Launcher Crash များနှင့် နောက်ကွယ်မှ ဒေတာကလန်တိုက်မှုများကို တားဆီးရန် အပြီးသတ်ပြုပြင်ခြင်း
           if [ -f "$MANIFEST_FILE" ]; then
-            # (က) Application Tag ထဲရှိ android:name="..." (Custom App) ကို ဖြုတ်ချခြင်း (ဒါက အဓိကတရားခံပါ)
             sed -i 's|android:name="[^"]*Application[^"]*"||g' "$MANIFEST_FILE"
-            
-            # (ခ) Theme အဟောင်းများကို ရှင်းထုတ်ပြီး Safe Theme (NoActionBar) သို့ အတင်းပြောင်းခြင်း
             sed -i 's|android:theme="[^"]*"|android:theme="@style/Theme.AppCompat.Light.NoActionBar"|g' "$MANIFEST_FILE"
-            
-            # (ဂ) MainActivity ကို Launcher အဖြစ် သေချာပေါက် သတ်မှတ်ခြင်း
             sed -i 's|android:name=".*MainActivity"|android:name=".MainActivity"|g' "$MANIFEST_FILE"
           fi
-          
           echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
 
       - name: Compile And Force Build POS APK
@@ -85,12 +79,10 @@ jobs:
           cd ${{ env.PROJECT_PATH }}
           printf "android.useAndroidX=true\nandroid.enableJetifier=true\n" > gradle.properties
           
-          # Theme မရှိပါက အလိုအလျောက် ဖြည့်စွက်ပေးခြင်း
           STYLES_FILE=$(find . -name "styles.xml" -o -name "themes.xml" | head -n 1)
           if [ ! -z "$STYLES_FILE" ]; then
              echo '<resources><style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"></style></resources>' > "$STYLES_FILE"
           fi
-          
           gradle assembleDebug --no-daemon --no-build-cache -x lint
 
       - name: Upload Verified POS Output APK
