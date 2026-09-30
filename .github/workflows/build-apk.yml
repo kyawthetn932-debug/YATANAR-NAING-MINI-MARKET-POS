@@ -47,14 +47,13 @@ jobs:
           </LinearLayout>
           EOF
 
-          # ပင်မ Java ဖိုင်ကို စနစ်တကျ ပြန်ဆောက်ခြင်း
+          # ပင်မ Java ဖိုင်ကို စနစ်တကျ ပြန်ဆောက်ခြင်း (onCreate အမှန်ဖြင့် ပြန်ပြင်ထားပါသည်)
           TARGET_FILE="$PROJECT_DIR/app/src/main/java/com/yatanarnaing/pos/MainActivity.java"
           mkdir -p "$(dirname "$TARGET_FILE")"
           cat << 'EOF' > "$TARGET_FILE"
           package com.yatanarnaing.pos;
           
           import android.os.Bundle;
-          import android.widget.TextView;
           import androidx.appcompat.app.AppCompatActivity;
           
           public class MainActivity extends AppCompatActivity {
