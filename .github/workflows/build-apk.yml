@@ -24,23 +24,29 @@ jobs:
 
       - name: Clean Environment and Unzip Original Project Only
         run: |
-          # လက်ရှိပတ်ဝန်းကျင်ကို ရှင်းလင်းပြီး သင့်မူရင်းဇစ်ဖိုင်ကိုသာ အသုံးပြုရန် ပြင်ဆင်ခြင်း
           find . -maxdepth 1 ! -name 'YATANAR_NAING_POS_APK_BUILD_FIXED.zip' ! -name '.github' ! -name '.' -exec rm -rf {} +
           unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
           
-          # ပရောဂျက်လမ်းကြောင်းကို အလိုအလျောက် ရှာဖွေခြင်း
           PROJECT_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
           echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
 
-      - name: Apply Strict AndroidX Properties
+      - name: Resolve Duplicate Dependency Conflict
         run: |
           PROP_FILE="${{ env.PROJECT_PATH }}/gradle.properties"
-          printf "android.useAndroidX=true\nandroid.enableJetifier=true\n" > "$PROP_FILE"
+          # ဗားရှင်းအချင်းချင်း ထပ်နေသည့် ပြဿနာများကို အတင်းအကျပ် ညှိနှိုင်းခိုင်းခြင်း
+          printf "android.useAndroidX=true\nandroid.enableJetifier=true\nandroid.defaults.buildfeatures.buildconfig=true\n" > "$PROP_FILE"
+          
+          # build.gradle ထဲတွင် ဗားရှင်းကို အလိုအလျောက် ပြုပြင်ခြင်း
+          APP_GRADLE="${{ env.PROJECT_PATH }}/app/build.gradle"
+          if [ -f "$APP_GRADLE" ]; then
+            sed -i 's/implementation "androidx.room:room-runtime:.*/implementation "androidx.room:room-runtime:2.6.1"/g' "$APP_GRADLE"
+            sed -i 's/annotationProcessor "androidx.room:room-compiler:.*/annotationProcessor "androidx.room:room-compiler:2.6.1"/g' "$APP_GRADLE"
+          fi
 
       - name: Compile And Build Standard POS APK
         run: |
           cd ${{ env.PROJECT_PATH }}
-          gradle assembleDebug --no-daemon --no-build-cache
+          gradle assembleDebug --no-daemon --no-build-cache -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
       - name: Upload Verified POS Output APK
         uses: actions/upload-artifact@v4
