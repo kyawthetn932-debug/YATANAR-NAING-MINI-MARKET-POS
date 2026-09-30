@@ -29,29 +29,27 @@ jobs:
           
           PROJECT_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
           
-          # MainActivity.java ထဲက Java ကုဒ်အမှားများကို မူရင်းသန့်စင်သော ပုံစံသို့ အလိုအလျောက် ပြန်ပြင်ခြင်း
+          # MainActivity.java လမ်းကြောင်းကို အတိအကျရှာပြီး ကုဒ်အသစ်ပြန်ထည့်ခြင်း
           MAIN_ACTIVITY=$(find . -name "MainActivity.java" | head -n 1)
           if [ -f "$MAIN_ACTIVITY" ]; then
-            # အမှားဖြစ်စေသော ကုဒ်လိုင်းများကို ယာယီဖယ်ရှားပြီး အခြေခံ Android အသက်သွင်းစနစ်သာ ထားရှိခြင်း
             PKG_NAME=$(grep -m 1 "package " "$MAIN_ACTIVITY")
-            cat << EOF > "$MAIN_ACTIVITY"
-            $PKG_NAME
             
-            import android.os.Bundle;
-            import androidx.appcompat.app.AppCompatActivity;
-            
-            public class MainActivity extends AppCompatActivity {
-                @Override
-                protected void onCreate(Bundle savedInstanceState) {
-                    super.onCreate(savedInstanceState);
-                    // မူရင်း Layout ကို ရှာဖွေပြီး ချိတ်ဆက်ခြင်း
-                    int layoutId = getResources().getIdentifier("activity_main", "layout", getPackageName());
-                    if (layoutId != 0) {
-                        setContentView(layoutId);
-                    }
-                }
-            }
-            EOF
+            # EOF စနစ်ကို Linux ပတ်ဝန်းကျင်နှင့် ကိုက်ညီအောင် သီးသန့်ခွဲရေးခြင်း
+            echo "$PKG_NAME" > "$MAIN_ACTIVITY"
+            echo "" >> "$MAIN_ACTIVITY"
+            echo "import android.os.Bundle;" >> "$MAIN_ACTIVITY"
+            echo "import androidx.appcompat.app.AppCompatActivity;" >> "$MAIN_ACTIVITY"
+            echo "" >> "$MAIN_ACTIVITY"
+            echo "public class MainActivity extends AppCompatActivity {" >> "$MAIN_ACTIVITY"
+            echo "    @Override" >> "$MAIN_ACTIVITY"
+            echo "    protected void onCreate(Bundle savedInstanceState) {" >> "$MAIN_ACTIVITY"
+            echo "        super.onCreate(savedInstanceState);" >> "$MAIN_ACTIVITY"
+            echo "        int layoutId = getResources().getIdentifier(\"activity_main\", \"layout\", getPackageName());" >> "$MAIN_ACTIVITY"
+            echo "        if (layoutId != 0) {" >> "$MAIN_ACTIVITY"
+            echo "            setContentView(layoutId);" >> "$MAIN_ACTIVITY"
+            echo "        }" >> "$MAIN_ACTIVITY"
+            echo "    }" >> "$MAIN_ACTIVITY"
+            echo "}" >> "$MAIN_ACTIVITY"
           fi
           
           echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
