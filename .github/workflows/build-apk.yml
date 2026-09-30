@@ -31,7 +31,7 @@ jobs:
           MANIFEST_FILE=$(find . -name "AndroidManifest.xml" | head -n 1)
           PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' "$MANIFEST_FILE" || echo "com.yatanarnaing.pos")
           
-          # ၁။ App နာမည်ကို strings.xml ထဲတွင် YATANAR POS သို့ အတင်းအကျပ် ပြောင်းလဲခြင်း
+          # ၁။ App နာမည်ကို strings.xml ထဲတွင် YATANAR POS သို့ ပြောင်းလဲခြင်း
           STRINGS_FILE=$(find . -name "strings.xml" | head -n 1)
           if [ -f "$STRINGS_FILE" ]; then
             sed -i 's|<string name="app_name">.*</string>|<string name="app_name">YATANAR POS (Mini Market)</string>|g' "$STRINGS_FILE"
@@ -66,8 +66,10 @@ jobs:
             echo "}" >> "$MAIN_ACTIVITY"
           fi
 
-          # ၄။ Launcher Crash ပြဿနာကိုဖြေရှင်းရန် AndroidManifest.xml ကို အလိုအလျောက် ပြုပြင်ခြင်း
+          # ၄။ Background Crash များအားလုံးကို တားဆီးရန် AndroidManifest.xml ကို အပြီးသတ်ပြုပြင်ခြင်း
           if [ -f "$MANIFEST_FILE" ]; then
+            # Application ထဲရှိ android:name ကြေညာချက်ဟောင်း (Custom Application) ကို လုံးဝဖြုတ်ပစ်ခြင်း
+            sed -i 's|android:name="[^"]*Application[^"]*"||g' "$MANIFEST_FILE"
             # MainActivity ကို လမ်းကြောင်းမှန်ကန်စွာဖြင့် စတင်ပွင့်ရမည့် Launcher အဖြစ် အတင်းအကျပ် သတ်မှတ်ခြင်း
             sed -i 's|android:name=".*MainActivity"|android:name=".MainActivity"|g' "$MANIFEST_FILE"
           fi
