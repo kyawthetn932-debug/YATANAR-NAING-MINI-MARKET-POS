@@ -59,7 +59,7 @@ jobs:
           
           public class MainActivity extends AppCompatActivity {
               @Override
-              protected void officeCreate(Bundle savedInstanceState) {
+              protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
               }
@@ -76,11 +76,10 @@ jobs:
       - name: Compile And Build Standard POS APK
         run: |
           cd ${{ env.PROJECT_PATH }}
-          ./gradlew assembleDebug --no-daemon --no-build-cache
+          gradle assembleDebug --no-daemon --no-build-cache
 
       - name: Upload Verified POS Output APK
         uses: actions/upload-artifact@v4
         with:
           name: YATANAR-NAING-PROFESSIONAL-POS-APK
           path: "**/build/outputs/apk/debug/*.apk"
-
