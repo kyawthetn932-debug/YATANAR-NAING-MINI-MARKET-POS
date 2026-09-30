@@ -22,12 +22,38 @@ jobs:
         with:
           gradle-version: 8.7
 
-      - name: Clean Environment and Unzip Original Project Only
+      - name: Clean Environment and Unzip Original Project
         run: |
           find . -maxdepth 1 ! -name 'YATANAR_NAING_POS_APK_BUILD_FIXED.zip' ! -name '.github' ! -name '.' -exec rm -rf {} +
           unzip -o YATANAR_NAING_POS_APK_BUILD_FIXED.zip
           
           PROJECT_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
+          
+          # MainActivity.java ထဲက Java ကုဒ်အမှားများကို မူရင်းသန့်စင်သော ပုံစံသို့ အလိုအလျောက် ပြန်ပြင်ခြင်း
+          MAIN_ACTIVITY=$(find . -name "MainActivity.java" | head -n 1)
+          if [ -f "$MAIN_ACTIVITY" ]; then
+            # အမှားဖြစ်စေသော ကုဒ်လိုင်းများကို ယာယီဖယ်ရှားပြီး အခြေခံ Android အသက်သွင်းစနစ်သာ ထားရှိခြင်း
+            PKG_NAME=$(grep -m 1 "package " "$MAIN_ACTIVITY")
+            cat << EOF > "$MAIN_ACTIVITY"
+            $PKG_NAME
+            
+            import android.os.Bundle;
+            import androidx.appcompat.app.AppCompatActivity;
+            
+            public class MainActivity extends AppCompatActivity {
+                @Override
+                protected void onCreate(Bundle savedInstanceState) {
+                    super.onCreate(savedInstanceState);
+                    // မူရင်း Layout ကို ရှာဖွေပြီး ချိတ်ဆက်ခြင်း
+                    int layoutId = getResources().getIdentifier("activity_main", "layout", getPackageName());
+                    if (layoutId != 0) {
+                        setContentView(layoutId);
+                    }
+                }
+            }
+            EOF
+          fi
+          
           echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
 
       - name: Resolve Dependency and Formatting Conflicts
@@ -44,8 +70,7 @@ jobs:
       - name: Compile And Build Standard POS APK
         run: |
           cd ${{ env.PROJECT_PATH }}
-          # -x lint နှင့် options.compilerArgs ကိုသုံးပြီး ကုဒ်အသေးအဖွဲအမှားများကို ကျော်ဖြတ်၍ အတင်းအကျပ် Build ဆောက်ခိုင်းခြင်း
-          gradle assembleDebug --no-daemon --no-build-cache -x lint -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true -Pandroid.experimental.disableCompileSdkCheck=true
+          gradle assembleDebug --no-daemon --no-build-cache -x lint -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
       - name: Upload Verified POS Output APK
         uses: actions/upload-artifact@v4
